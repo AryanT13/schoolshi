@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SchoolShi</title>
+<title>SchoolShi — Classroom Prop Bets</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -31,8 +31,6 @@ input:focus{border-color:var(--accent)}
 .btn:active:not(:disabled){transform:scale(.97)}
 .btn:disabled{opacity:.35;cursor:not-allowed}
 .btn-primary{background:var(--accent);color:#000;width:100%}
-.btn-danger{background:var(--red);color:#fff}
-.btn-danger-full{background:var(--red);color:#fff;width:100%}
 .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
 .btn-full{width:100%}
 .btn-sm{padding:7px 14px;font-size:11px}
@@ -82,10 +80,6 @@ input:focus{border-color:var(--accent)}
 .history-info{flex:1}
 .history-name{font-weight:700;font-size:14px}
 .history-meta{font-size:12px;color:var(--muted);margin-top:2px}
-.bet-result-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border)}
-.bet-result-row:last-child{border-bottom:none}
-.bet-result-phrase{font-size:13px;font-weight:600}
-.bet-result-meta{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:center;justify-content:center}
 .modal-overlay.show{display:flex}
 .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;max-width:340px;width:90%;display:flex;flex-direction:column;gap:16px}
@@ -93,16 +87,11 @@ input:focus{border-color:var(--accent)}
 .modal-body{color:var(--muted);font-size:14px;line-height:1.5}
 .modal-btns{display:flex;gap:10px}
 .modal-btns .btn{flex:1}
-hr{border:none;border-top:1px solid var(--border)}
 .t-muted{color:var(--muted);font-size:13px}
 .t-center{text-align:center}
 .t-mono{font-family:'DM Mono',monospace}
-.t-gold{color:var(--gold)}
 .t-accent{color:var(--accent)}
-.t-red{color:var(--red)}
-.t-error{color:var(--red);font-size:13px;text-align:center}
-.t-sm{font-size:12px}
-.t-bold{font-weight:700}
+.t-error{color:var(--red);font-size:13px;text-align:center;font-weight:600}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:12px 20px;border-radius:8px;font-size:14px;font-weight:500;transition:transform .25s ease;z-index:999;white-space:nowrap;pointer-events:none}
 .toast.show{transform:translateX(-50%) translateY(0)}
 @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
@@ -111,38 +100,35 @@ hr{border:none;border-top:1px solid var(--border)}
 </head>
 <body>
 
-<!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
   <div class="modal-box" onclick="event.stopPropagation()">
     <div class="modal-title" id="modal-title"></div>
-    <div class="modal-body"  id="modal-body"></div>
+    <div class="modal-body" id="modal-body"></div>
     <div class="modal-btns">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-danger" id="modal-confirm-btn" onclick="runModal()">Confirm</button>
+      <button class="btn btn-primary" id="modal-confirm-btn" onclick="runModal()">Confirm</button>
     </div>
   </div>
 </div>
 
-<!-- EDIT BET MODAL -->
 <div class="modal-overlay" id="edit-bet-modal" onclick="closeEditBetModal()">
   <div class="modal-box" onclick="event.stopPropagation()">
-    <div class="modal-title">Edit Bet</div>
+    <div class="modal-title">Edit Prop Line</div>
     <div class="field" style="margin-bottom:10px;">
-      <label>Phrase</label>
-      <input type="text" id="edit-bet-phrase" placeholder="Phrase">
+      <label>Phrase / Statement</label>
+      <input type="text" id="edit-bet-phrase">
     </div>
     <div class="field" style="margin-bottom:4px;">
-      <label>Line</label>
-      <input type="number" id="edit-bet-line" placeholder="10.5" step="0.5">
+      <label>Line Metric</label>
+      <input type="number" id="edit-bet-line" step="0.5">
     </div>
     <div class="modal-btns" style="margin-top:6px;">
       <button class="btn btn-ghost" onclick="closeEditBetModal()">Cancel</button>
-      <button class="btn btn-primary" style="width:auto;" onclick="saveEditBet()">Save</button>
+      <button class="btn btn-primary" onclick="saveEditBet()">Save Changes</button>
     </div>
   </div>
 </div>
 
-<!-- LANDING -->
 <div id="view-landing" class="view active">
   <div style="padding-top:36px;margin-bottom:4px;">
     <div class="logo">SchoolShi</div>
@@ -150,15 +136,15 @@ hr{border:none;border-top:1px solid var(--border)}
     <div class="logo-sub" style="margin-top:1px;letter-spacing:1px;">by Aryan Thaker</div>
   </div>
   <div class="card">
-    <button class="btn btn-primary" onclick="goStudentJoin()">▶ &nbsp;Join a Game</button>
-    <button class="btn btn-ghost btn-full" onclick="showView('admin-login')">Admin</button>
+    <button class="btn btn-primary" onclick="goStudentJoin()">▶ &nbsp;Join active room</button>
+    <button class="btn btn-ghost btn-full" onclick="showView('admin-login')">Admin Dashboard</button>
   </div>
   <div id="rejoin-card" style="display:none;">
-    <div class="slabel" style="margin-bottom:8px;">Last Game</div>
+    <div class="slabel" style="margin-bottom:8px;">Last Active Room</div>
     <div class="card" style="gap:10px;">
       <div>
-        <div id="rejoin-game-name" class="t-bold" style="font-size:14px;"></div>
-        <div id="rejoin-player-name" class="t-muted t-sm" style="margin-top:2px;"></div>
+        <div id="rejoin-game-name" style="font-weight: 700; font-size:14px;"></div>
+        <div id="rejoin-player-name" class="t-muted" style="font-size:12px; margin-top:2px;"></div>
       </div>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="rejoinLastGame()">Rejoin</button>
@@ -168,226 +154,143 @@ hr{border:none;border-top:1px solid var(--border)}
   </div>
 </div>
 
-<!-- ADMIN LOGIN -->
 <div id="view-admin-login" class="view">
-  <button class="back-btn" onclick="showView('landing')">← Back</button>
-  <div class="logo" style="font-size:38px;text-align:left;letter-spacing:4px;">Admin</div>
+  <button class="back-btn" onclick="showView('landing')">← Cancel</button>
+  <div class="logo" style="font-size:38px;text-align:left;letter-spacing:4px;">Admin Portal</div>
   <div class="card">
     <div class="field">
-      <label>Class Password</label>
-      <input type="password" id="admin-pw" placeholder="Create or enter your class password" onkeydown="if(event.key==='Enter') adminLogin()">
+      <label>Classroom Key Phrase</label>
+      <input type="password" id="admin-pw" placeholder="Enter custom room manager password" onkeydown="if(event.key==='Enter') adminLogin()">
     </div>
-    <div class="t-muted t-sm" style="margin-top:-6px;">Each unique password creates a separate class. Share only with your class admin.</div>
+    <div class="t-muted" style="font-size:11px; margin-top:-6px;">Unique strings safely segregate separate classes. Keep this code secret.</div>
     <div id="admin-login-err" class="t-error" style="display:none;"></div>
-    <button class="btn btn-primary" onclick="adminLogin()">Enter</button>
+    <button class="btn btn-primary" onclick="adminLogin()">Enter Dashboard</button>
   </div>
 </div>
 
-<!-- ADMIN DASHBOARD -->
 <div id="view-admin-dashboard" class="view">
   <div style="display:flex;justify-content:space-between;align-items:center;">
     <div>
       <div class="logo" style="font-size:34px;letter-spacing:4px;">SchoolShi</div>
-      <div class="logo-sub" style="margin-top:1px;letter-spacing:1px;text-align:left;">by Aryan Thaker</div>
     </div>
-    <button class="back-btn" onclick="adminLogout()">Logout</button>
+    <button class="back-btn" onclick="adminLogout()">Sign Out</button>
   </div>
-  <div class="tabs" style="flex-wrap:wrap;">
-    <button class="tab-btn active" id="tab-game"      onclick="switchTab('game')">🎮 Game</button>
-    <button class="tab-btn"        id="tab-history"   onclick="switchTab('history')">📋 History</button>
-    <button class="tab-btn"        id="tab-season"    onclick="switchTab('season')">🏆 Season</button>
-    <button class="tab-btn"        id="tab-templates" onclick="switchTab('templates')">📄 Templates</button>
-    <button class="tab-btn"        id="tab-trash"     onclick="switchTab('trash')">🗑️ Trash</button>
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-game" onclick="switchTab('game')">🎮 Engine</button>
+    <button class="tab-btn" id="tab-history" onclick="switchTab('history')">📋 Logs</button>
+    <button class="tab-btn" id="tab-season" onclick="switchTab('season')">🏆 Ladder</button>
   </div>
 
-  <!-- GAME TAB -->
   <div id="tab-game-content" style="display:flex;flex-direction:column;gap:14px;">
     <div id="admin-create-section">
       <div id="return-game-card" style="display:none;margin-bottom:10px;">
-        <div class="slabel" style="margin-bottom:8px;">Active Game</div>
+        <div class="slabel" style="margin-bottom:8px;">Active Running Event</div>
         <div class="card" style="gap:10px;">
           <div id="return-game-name" style="font-weight:700;font-size:15px;"></div>
-          <button class="btn btn-ghost btn-full" onclick="returnToGame()">Return to Game →</button>
+          <button class="btn btn-ghost btn-full" onclick="returnToGame()">Reopen Control Desk →</button>
         </div>
       </div>
-      <div class="slabel" style="margin-bottom:8px;">New Game</div>
+      <div class="slabel" style="margin-bottom:8px;">Initialize Match instance</div>
       <div class="card">
         <div class="field">
-          <label>Game Name</label>
-          <input type="text" id="new-game-name" placeholder='e.g. History — March 19' onkeydown="if(event.key==='Enter') createGame()">
+          <label>Instance Topic Name</label>
+          <input type="text" id="new-game-name" placeholder="e.g. European History Quiz — June 12">
         </div>
         <div class="field">
-          <label>Tag (optional)</label>
-          <input type="text" id="new-game-tag" placeholder='e.g. Period 1 · AP Bio'>
+          <label>Section Tag Label (Optional)</label>
+          <input type="text" id="new-game-tag" placeholder="e.g. Period 3 · AP Euro">
         </div>
-        <div class="field">
-          <label>Load from Template (optional)</label>
-          <select id="new-game-template" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:11px 14px;outline:none;">
-            <option value="">— No template —</option>
-          </select>
-        </div>
-        <button class="btn btn-primary" onclick="createGame()">Create Game</button>
+        <div id="admin-engine-err" class="t-error" style="display:none; margin-bottom: 5px;"></div>
+        <button class="btn btn-primary" onclick="createGame()">Launch Live Match</button>
       </div>
     </div>
+    
     <div id="admin-active-section" style="display:none;flex-direction:column;gap:14px;">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
           <div style="flex:1;">
             <div id="admin-game-name" style="font-weight:700;font-size:16px;"></div>
             <div id="admin-status-badge" style="margin-top:6px;"></div>
-            <div id="admin-submit-count" class="t-muted t-sm" style="margin-top:4px;"></div>
+            <div id="admin-submit-count" class="t-muted" style="margin-top:4px; font-size:12px;"></div>
           </div>
           <div style="text-align:right;flex-shrink:0;">
-            <div class="slabel">Game Code</div>
+            <div class="slabel">Room Token</div>
             <div id="admin-game-code" style="font-family:'Bebas Neue';font-size:44px;letter-spacing:8px;color:var(--accent);line-height:1;"></div>
             <button class="btn btn-ghost btn-sm" style="margin-top:6px;" onclick="copyCode()">Copy Code</button>
           </div>
         </div>
-        <button class="btn btn-ghost btn-sm" style="align-self:flex-start;" onclick="goBackToCreate()">← New Game</button>
+        <button class="btn btn-ghost btn-sm" style="align-self:flex-start;" onclick="goBackToCreate()">← Exit to Lobby</button>
       </div>
       <div id="admin-add-bet" style="display:none;">
-        <div class="slabel" style="margin-bottom:8px;">Add Prop Bet</div>
+        <div class="slabel" style="margin-bottom:8px;">Add Custom Metric Line</div>
         <div class="card">
           <div class="field">
-            <label>Phrase</label>
-            <input type="text" id="bet-phrase" placeholder='"nothing happens in isolation"'>
+            <label>Observed Action / Statement Phrase</label>
+            <input type="text" id="bet-phrase" placeholder="Teacher drinks coffee before 9:15 AM">
           </div>
           <div class="row">
             <div class="field">
-              <label>Line</label>
-              <input type="number" id="bet-line" placeholder="10.5" step="0.5">
+              <label>Line Baseline</label>
+              <input type="number" id="bet-line" placeholder="0.5" step="0.5">
             </div>
             <div style="display:flex;align-items:flex-end;">
-              <button class="btn btn-ghost btn-sm" onclick="addBet()" style="height:42px;padding:0 20px;">+ Add</button>
+              <button class="btn btn-ghost btn-sm" onclick="addBet()" style="height:42px;padding:0 20px;">+ Add Line</button>
             </div>
           </div>
         </div>
       </div>
       <div>
-        <div class="slabel" style="margin-bottom:8px;">Prop Bets</div>
-        <div class="card" style="gap:8px;"><div id="admin-bets-list"><div class="t-muted t-center">No bets added yet.</div></div></div>
+        <div class="slabel" style="margin-bottom:8px;">Active Pools</div>
+        <div class="card" style="gap:8px;"><div id="admin-bets-list"></div></div>
       </div>
       <div>
-        <div class="slabel" style="margin-bottom:8px;">Players (<span id="admin-player-count">0</span>)</div>
-        <div class="card" style="gap:0;"><div id="admin-player-list"><div class="t-muted t-center">Waiting for players...</div></div></div>
+        <div class="slabel" style="margin-bottom:8px;">Roster Hub (<span id="admin-player-count">0</span>)</div>
+        <div class="card" style="gap:0;"><div id="admin-player-list"></div></div>
       </div>
-      <button id="btn-lock"   class="btn btn-ghost btn-full" onclick="confirmLock()"  style="display:none;">🔒 &nbsp;Lock Betting</button>
-      <button id="btn-unlock" class="btn btn-ghost btn-full" onclick="unlockGame()"   style="display:none;">🔓 &nbsp;Unlock Betting</button>
+      <button id="btn-lock" class="btn btn-ghost btn-full" onclick="confirmLock()" style="display:none;">🔒 &nbsp;Lock User Inputs</button>
+      <button id="btn-unlock" class="btn btn-ghost btn-full" onclick="unlockGame()" style="display:none;">🔓 &nbsp;Reopen Pool Submissions</button>
+      
       <div id="admin-end-section" style="display:none;">
-        <div class="slabel" style="margin-bottom:8px;">Enter Final Phrase Counts</div>
+        <div class="slabel" style="margin-bottom:8px;">Resolution Audit Deck</div>
         <div class="card">
           <div id="admin-counts-list"></div>
-          <button class="btn btn-danger-full" onclick="confirmEndGame()">End Game &amp; Calculate Scores</button>
+          <button class="btn btn-primary" style="background:var(--red); color:#fff;" onclick="confirmEndGame()">Tally Points & Resolve Match</button>
         </div>
       </div>
       <div id="admin-leaderboard-section" style="display:none;">
-        <div class="slabel" style="margin-bottom:8px;">Final Leaderboard</div>
+        <div class="slabel" style="margin-bottom:8px;">Final Round Results</div>
         <div class="card"><div id="admin-leaderboard-content"></div></div>
-        <div style="margin-top:10px;">
-          <button class="btn btn-ghost btn-full" onclick="goBackToCreate()">← Start New Game</button>
-        </div>
+        <button class="btn btn-ghost btn-full" style="margin-top:10px;" onclick="goBackToCreate()">← Clear Frame</button>
       </div>
     </div>
   </div>
 
-  <!-- HISTORY TAB -->
   <div id="tab-history-content" style="display:none;flex-direction:column;gap:14px;">
-    <div id="history-list-section" style="display:flex;flex-direction:column;gap:10px;">
-      <div class="card" style="gap:10px;"><div id="history-list-content"><div class="t-muted t-center">No past games yet.</div></div></div>
-    </div>
-    <div id="history-detail-section" style="display:none;flex-direction:column;gap:14px;">
-      <button class="back-btn" onclick="closeHistoryDetail()">← All Games</button>
-      <div id="history-detail-header" class="card"></div>
-      <div>
-        <div class="slabel" style="margin-bottom:8px;">Bets &amp; Results</div>
-        <div class="card" style="gap:8px;"><div id="history-detail-bets"></div></div>
-      </div>
-      <div>
-        <div class="slabel" style="margin-bottom:8px;">Leaderboard</div>
-        <div class="card"><div id="history-detail-lb"></div></div>
-      </div>
-      <button class="btn btn-ghost btn-full" id="history-export-btn" onclick="exportGameCSV()">⬇ Export CSV</button>
-    </div>
+    <div class="card" style="gap:10px;"><div id="history-list-content"></div></div>
   </div>
-
-  <!-- SEASON TAB -->
   <div id="tab-season-content" style="display:none;flex-direction:column;gap:14px;">
-    <div>
-      <div class="slabel" style="margin-bottom:8px;">All-Time Points</div>
-      <div class="card"><div id="season-lb-content"><div class="t-muted t-center">No season data yet.</div></div></div>
-    </div>
-    <button class="btn btn-red-ghost btn-sm" onclick="confirmResetSeason()">Reset Season</button>
-  </div>
-
-  <!-- TEMPLATES TAB -->
-  <div id="tab-templates-content" style="display:none;flex-direction:column;gap:14px;">
-    <div id="tpl-list-section" style="display:flex;flex-direction:column;gap:10px;">
-      <div class="slabel" style="margin-bottom:0;">Saved Templates</div>
-      <div class="card" style="gap:8px;"><div id="tpl-list-content"><div class="t-muted t-center">No templates yet.</div></div></div>
-      <div class="card" style="gap:10px;">
-        <div class="field">
-          <label>New Template Name</label>
-          <input type="text" id="new-tpl-name" placeholder='e.g. AP Bio Ch.12' onkeydown="if(event.key==='Enter') createTemplate()">
-        </div>
-        <button class="btn btn-ghost btn-full" onclick="createTemplate()">+ Create Template</button>
-      </div>
-    </div>
-    <div id="tpl-detail-section" style="display:none;flex-direction:column;gap:14px;">
-      <button class="back-btn" onclick="closeTemplateDetail()">← All Templates</button>
-      <div id="tpl-detail-header" class="card" style="gap:6px;"></div>
-      <div class="slabel">Add Bet to Template</div>
-      <div class="card" style="gap:10px;">
-        <div class="field">
-          <label>Phrase</label>
-          <input type="text" id="tpl-bet-phrase" placeholder='"nothing happens in isolation"'>
-        </div>
-        <div class="row">
-          <div class="field">
-            <label>Line</label>
-            <input type="number" id="tpl-bet-line" placeholder="10.5" step="0.5">
-          </div>
-          <div style="display:flex;align-items:flex-end;">
-            <button class="btn btn-ghost btn-sm" onclick="addTemplateBet()" style="height:42px;padding:0 20px;">+ Add</button>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="slabel" style="margin-bottom:8px;">Bets in Template</div>
-        <div class="card" style="gap:8px;"><div id="tpl-bets-list"><div class="t-muted t-center">No bets yet.</div></div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TRASH TAB -->
-  <div id="tab-trash-content" style="display:none;flex-direction:column;gap:14px;">
-    <div>
-      <div class="slabel" style="margin-bottom:8px;">Deleted Items</div>
-      <div class="card" style="gap:8px;"><div id="trash-content"><div class="t-muted t-center">Trash is empty.</div></div></div>
-    </div>
-    <button class="btn btn-red-ghost btn-sm" onclick="confirmEmptyTrash()">Empty Trash</button>
+    <div class="card"><div id="season-lb-content"></div></div>
+    <button class="btn btn-red-ghost btn-sm" onclick="confirmResetSeason()">Purge Master Leaderboard</button>
   </div>
 </div>
 
-<!-- STUDENT JOIN -->
 <div id="view-student-join" class="view">
-  <button class="back-btn" onclick="showView('landing')">← Back</button>
-  <div class="logo" style="font-size:38px;text-align:left;letter-spacing:4px;">Join Game</div>
+  <button class="back-btn" onclick="showView('landing')">← Exit</button>
+  <div class="logo" style="font-size:38px;text-align:left;letter-spacing:4px;">Enter Room</div>
   <div class="card">
     <div class="field">
-      <label>Game Code</label>
-      <input type="text" id="join-code" placeholder="XXXX" maxlength="6"
-             style="font-family:'Bebas Neue';font-size:36px;letter-spacing:10px;text-align:center;text-transform:uppercase;">
+      <label>4-Digit Token</label>
+      <input type="text" id="join-code" placeholder="XXXX" maxlength="4" style="font-family:'Bebas Neue';font-size:36px;letter-spacing:10px;text-align:center;text-transform:uppercase;">
     </div>
     <div class="field">
-      <label>Your Name</label>
-      <input type="text" id="join-name" placeholder="First name or nickname" onkeydown="if(event.key==='Enter') joinGame()">
+      <label>Your Identity Name</label>
+      <input type="text" id="join-name" placeholder="Enter first name or standard initial" onkeydown="if(event.key==='Enter') joinGame()">
     </div>
     <div id="join-err" class="t-error" style="display:none;"></div>
-    <button class="btn btn-primary" onclick="joinGame()">Join Game</button>
+    <button class="btn btn-primary" onclick="joinGame()">Connect Profile</button>
   </div>
 </div>
 
-<!-- STUDENT GAME -->
 <div id="view-student-game" class="view">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
     <div>
@@ -395,47 +298,46 @@ hr{border:none;border-top:1px solid var(--border)}
       <div id="sg-status" style="margin-top:4px;"></div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;">
-      <div style="text-align:right;flex-shrink:0;">
-        <div class="slabel">Playing as</div>
+      <div style="text-align:right;">
+        <div class="slabel">Identity</div>
         <div id="sg-player-name" style="font-weight:700;font-size:15px;"></div>
       </div>
-      <button class="back-btn" onclick="confirmLeaveGame()" title="Leave game" style="font-size:18px;line-height:1;">✕</button>
+      <button class="back-btn" onclick="confirmLeaveGame()" style="font-size:18px;">✕</button>
     </div>
   </div>
   <div id="sg-bets-list"></div>
   <div id="sg-submit-area" style="display:none;">
-    <button class="btn btn-primary" onclick="submitPicks()">Lock In My Picks</button>
-    <div class="t-muted t-center t-sm" style="margin-top:6px;">All bets must be picked before submitting.</div>
+    <button class="btn btn-primary" onclick="submitPicks()">Finalize & Lock Predictions</button>
   </div>
   <div id="sg-submitted-msg" style="display:none;">
     <div class="card" style="text-align:center;gap:6px;">
       <div style="font-size:28px;" class="waiting-dot">⏳</div>
-      <div style="font-weight:700;">Picks locked in!</div>
-      <div class="t-muted t-sm">Waiting for class to end...</div>
+      <div style="font-weight:700;">Predictions Saved securely</div>
+      <div class="t-muted" style="font-size:12px;">Awaiting round conclusion from room manager...</div>
     </div>
   </div>
   <div id="sg-locked-msg" style="display:none;">
     <div class="card" style="text-align:center;gap:6px;">
       <div style="font-size:28px;">🔒</div>
-      <div style="font-weight:700;">Betting is closed</div>
-      <div class="t-muted t-sm">Waiting for game to end...</div>
+      <div style="font-weight:700;">Pool Entrance Suspended</div>
+      <div class="t-muted" style="font-size:12px;">The window for choices has elapsed.</div>
     </div>
   </div>
   <div id="sg-results" style="display:none;flex-direction:column;gap:14px;">
     <div class="card" style="text-align:center;gap:6px;">
-      <div class="slabel">Your Score</div>
+      <div class="slabel">Score Tally</div>
       <div id="sg-my-score" style="font-family:'Bebas Neue';font-size:72px;color:var(--accent);line-height:1;"></div>
-      <div id="sg-my-score-sub" class="t-muted t-sm"></div>
+      <div id="sg-my-score-sub" class="t-muted" style="font-size:12px;"></div>
     </div>
     <div>
-      <div class="slabel" style="margin-bottom:8px;">Your Picks</div>
+      <div class="slabel" style="margin-bottom:8px;">Breakdown Grid</div>
       <div class="card"><div id="sg-bet-breakdown"></div></div>
     </div>
     <div>
-      <div class="slabel" style="margin-bottom:8px;">Leaderboard</div>
+      <div class="slabel" style="margin-bottom:8px;">Classroom Standing</div>
       <div class="card"><div id="sg-leaderboard-content"></div></div>
     </div>
-    <button class="btn btn-ghost btn-full" onclick="leaveGame()">← Back to Home</button>
+    <button class="btn btn-ghost btn-full" onclick="leaveGame()">← Exit to Menu</button>
   </div>
 </div>
 
@@ -443,76 +345,59 @@ hr{border:none;border-top:1px solid var(--border)}
 
 <script>
 // ════════════════════════════════════════════════════════
-// CONFIG
+// 1. CONFIGURATION STAGE (PASTE NEW LINK DETAILS HERE)
 // ════════════════════════════════════════════════════════
-// No shared password — any password creates a unique class namespace.
-
 const firebaseConfig = {
-  apiKey:            "AIzaSyC-kASKeZfsxfBjuG0m_1stoJlkyF5mwQs",
-  authDomain:        "claine-c2355.firebaseapp.com",
-  databaseURL:       "https://claine-c2355-default-rtdb.firebaseio.com",
-  projectId:         "claine-c2355",
-  storageBucket:     "claine-c2355.firebasestorage.app",
-  messagingSenderId: "771890037145",
-  appId:             "1:771890037145:web:3bcd4bc222ce23ccaa1308"
+  apiKey: "PASTE_YOUR_API_KEY_HERE",
+  authDomain: "PASTE_YOUR_AUTH_DOMAIN_HERE",
+  databaseURL: "PASTE_YOUR_REALTIME_DATABASE_URL_HERE",
+  projectId: "PASTE_YOUR_PROJECT_ID_HERE",
+  storageBucket: "PASTE_YOUR_STORAGE_BUCKET_HERE",
+  messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID_HERE",
+  appId: "PASTE_YOUR_APP_ID_HERE"
 };
 
 // ════════════════════════════════════════════════════════
-// INIT
+// RUNTIME STATE CONSTRUCTORS
 // ════════════════════════════════════════════════════════
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-// ════════════════════════════════════════════════════════
-// STATE
-// ════════════════════════════════════════════════════════
-let currentAdminId   = null;
-let adminGameCode    = null;
-let studentGameCode  = null;
-let studentKey       = null;
-let studentPicks     = {};
+let db;
+let initialized = false;
+let currentAdminId = null;
+let adminGameCode = null;
+let studentGameCode = null;
+let studentKey = null;
+let studentPicks = {};
 let studentSubmitted = false;
-let lastGameData     = null;
-let listeners        = [];
-let modalAction      = null;
+let lastGameData = null;
+let listeners = [];
+let modalAction = null;
+let editingBetId = null;
 
-// ════════════════════════════════════════════════════════
-// LOCAL STORAGE
-// ════════════════════════════════════════════════════════
+// Initialize Firebase with fallback checks
+try {
+  if (firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("PASTE_YOUR")) {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    initialized = true;
+  }
+} catch (e) {
+  console.error("Firebase Initialization Failure:", e);
+}
+
 const LS = {
-  get:(k)=>{ try{return JSON.parse(localStorage.getItem(k))}catch{return null} },
-  set:(k,v)=>{ try{localStorage.setItem(k,JSON.stringify(v))}catch{} },
-  del:(k)=>{ try{localStorage.removeItem(k)}catch{} }
+  get:(k)=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},
+  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}},
+  del:(k)=>{try{localStorage.removeItem(k)}catch{}}
 };
-const getHistory  = ()=> LS.get(`cl_history_${currentAdminId}`) || [];
-const getSeason   = ()=> LS.get(`cl_season_${currentAdminId}`)  || {};
-const saveHistory = h=> LS.set(`cl_history_${currentAdminId}`, h);
-const saveSeason  = s=> LS.set(`cl_season_${currentAdminId}`,  s);
-const getTemplates  = ()=> LS.get(`cl_templates_${currentAdminId}`) || [];
-const saveTemplates = t=> LS.set(`cl_templates_${currentAdminId}`, t);
-const getTrash    = ()=> LS.get(`cl_trash_${currentAdminId}`)   || [];
-const saveTrash   = t=> LS.set(`cl_trash_${currentAdminId}`,   t);
-const adminCodeKey = ()=> `cl_admin_code_${currentAdminId}`;
 
-let editingBetId        = null;
-let currentTemplateIdx  = null;
-let currentHistoryIdx   = null;
+const getHistory = () => LS.get(`sh_history_${currentAdminId}`) || [];
+const getSeason = () => LS.get(`sh_season_${currentAdminId}`) || {};
+const saveHistory = h => LS.set(`sh_history_${currentAdminId}`, h);
+const saveSeason = s => LS.set(`sh_season_${currentAdminId}`, s);
+const adminCodeKey = () => `sh_admin_code_${currentAdminId}`;
 
-function saveGameToHistory(game) {
-  const h   = getHistory();
-  const idx = h.findIndex(g=>g.code===game.code);
-  if(idx>=0) h[idx]=game; else h.unshift(game);
-  saveHistory(h.slice(0,50));
-}
-function addToSeason(players) {
-  const s = getSeason();
-  Object.values(players).forEach(p=>{ if(p.score!=null) s[p.name]=(s[p.name]||0)+p.score; });
-  saveSeason(s);
-}
-
-// ════════════════════════════════════════════════════════
-// UTILS
-// ════════════════════════════════════════════════════════
+function sanitizeKey(s){ return s.trim().toLowerCase().replace(/[.#$\[\]/\s]/g,'_').substring(0,40); }
+function genCode(){ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; return Array.from({length:4},()=>c[Math.floor(Math.random()*c.length)]).join(''); }
 function showView(id) {
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+id).classList.add('active');
@@ -522,76 +407,73 @@ function toast(msg,ms=2600) {
   t.textContent=msg; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),ms);
 }
-function err(id,msg)   { const e=document.getElementById(id); e.textContent=msg; e.style.display='block'; }
-function clearErr(id)  { document.getElementById(id).style.display='none'; }
-function sanitizeKey(s){ return s.trim().toLowerCase().replace(/[.#$\[\]/\s]/g,'_').substring(0,40); }
-function genCode()     { const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; return Array.from({length:4},()=>c[Math.floor(Math.random()*c.length)]).join(''); }
-function statusPill(s) { const m={open:['s-open','Open'],locked:['s-locked','Locked'],ended:['s-ended','Ended']}; const[cls,l]=m[s]||['s-open',s]; return `<span class="status-pill ${cls}">${l}</span>`; }
-function formatDate(ts){ return new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+function err(id,msg) { const e=document.getElementById(id); e.textContent=msg; e.style.display='block'; }
+function clearErr(id) { const e=document.getElementById(id); if(e) e.style.display='none'; }
+function statusPill(s) { 
+  const m={open:['s-open','Open'],locked:['s-locked','Locked'],ended:['s-ended','Ended']}; 
+  const[cls,l]=m[s]||['s-open',s]; return `<span class="status-pill ${cls}">${l}</span>`; 
+}
 function detachListeners(){ listeners.forEach(({ref,handler})=>ref.off('value',handler)); listeners=[]; }
 function subscribe(ref,handler){ ref.on('value',handler); listeners.push({ref,handler}); }
 
-// ════════════════════════════════════════════════════════
-// MODAL
-// ════════════════════════════════════════════════════════
-function openModal(title,body,action,confirmLabel='Confirm',danger=true) {
+// DIAGNOSTIC CORE ASSISTANCE
+function verifyDbConnection(errElementId) {
+  if (!initialized) {
+    err(errElementId, "Configuration Fault: Complete Step 3 to register your custom database parameters inside the code config block.");
+    return false;
+  }
+  return true;
+}
+
+// MODAL FLOW CONTROLLERS
+function openModal(title,body,action) {
   document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-body').textContent  = body;
-  const btn = document.getElementById('modal-confirm-btn');
-  btn.textContent = confirmLabel;
-  btn.className   = danger ? 'btn btn-danger' : 'btn btn-primary';
+  document.getElementById('modal-body').textContent = body;
   modalAction = action;
   document.getElementById('modal-overlay').classList.add('show');
 }
 function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); modalAction=null; }
-function runModal()   { const action=modalAction; closeModal(); if(action) action(); }
+function runModal() { const a=modalAction; closeModal(); if(a) a(); }
 
-// ════════════════════════════════════════════════════════
-// ADMIN — LOGIN / LOGOUT
-// ════════════════════════════════════════════════════════
+// ENTRY MANAGEMENT ACTIONS
 function adminLogin() {
   clearErr('admin-login-err');
+  if (!verifyDbConnection('admin-login-err')) return;
   const pw = document.getElementById('admin-pw').value.trim();
-  if(!pw){ err('admin-login-err','Enter a password.'); return; }
+  if(!pw){ err('admin-login-err','Password parameter cannot remain empty.'); return; }
   currentAdminId = sanitizeKey(pw);
   document.getElementById('admin-pw').value = '';
   showView('admin-dashboard');
-  populateTemplateDropdown();
   switchTab('game');
   checkReturnToGame();
 }
 function adminLogout() { detachListeners(); adminGameCode=null; currentAdminId=null; showView('landing'); }
 
-// ════════════════════════════════════════════════════════
-// ADMIN — TABS
-// ════════════════════════════════════════════════════════
 function switchTab(tab) {
-  ['game','history','season','templates','trash'].forEach(t=>{
+  ['game','history','season'].forEach(t=>{
     document.getElementById(`tab-${t}`).classList.toggle('active',t===tab);
     document.getElementById(`tab-${t}-content`).style.display = t===tab ? 'flex' : 'none';
   });
-  if(tab==='history')   renderHistoryList();
-  if(tab==='season')    renderSeasonLB();
-  if(tab==='trash')     renderTrash();
-  if(tab==='templates') renderTemplates();
+  if(tab==='history') renderHistoryList();
+  if(tab==='season') renderSeasonLB();
 }
 
-// ════════════════════════════════════════════════════════
-// ADMIN — RETURN TO GAME
-// ════════════════════════════════════════════════════════
+// APPLICATION STATE CHECKS
 async function checkReturnToGame() {
   const saved = LS.get(adminCodeKey());
   if(!saved){ document.getElementById('return-game-card').style.display='none'; return; }
   try {
-    const snap = await db.ref(`games/${saved}/meta`).once('value');
-    if(!snap.exists() || snap.val().status==='ended' || snap.val().adminId!==currentAdminId){
-      LS.del(adminCodeKey());
-      document.getElementById('return-game-card').style.display='none'; return;
-    }
-    document.getElementById('return-game-name').textContent = snap.val().name;
-    document.getElementById('return-game-card').style.display = 'block';
-  } catch { document.getElementById('return-game-card').style.display='none'; }
+    db.ref(`games/${saved}/meta`).once('value').then(snap => {
+      if(!snap.exists() || snap.val().status==='ended' || snap.val().adminId!==currentAdminId){
+        LS.del(adminCodeKey());
+        document.getElementById('return-game-card').style.display='none'; return;
+      }
+      document.getElementById('return-game-name').textContent = snap.val().name;
+      document.getElementById('return-game-card').style.display = 'block';
+    }).catch(()=>{ document.getElementById('return-game-card').style.display='none'; });
+  } catch(e) { document.getElementById('return-game-card').style.display='none'; }
 }
+
 function returnToGame() {
   const code = LS.get(adminCodeKey());
   if(!code) return;
@@ -601,6 +483,7 @@ function returnToGame() {
   document.getElementById('admin-game-code').textContent = code;
   attachAdminListener(code);
 }
+
 function goBackToCreate() {
   detachListeners(); adminGameCode=null;
   document.getElementById('admin-active-section').style.display = 'none';
@@ -608,698 +491,328 @@ function goBackToCreate() {
   checkReturnToGame();
 }
 
-// ════════════════════════════════════════════════════════
-// ADMIN — CREATE GAME
-// ════════════════════════════════════════════════════════
 async function createGame() {
+  clearErr('admin-engine-err');
+  if(!verifyDbConnection('admin-engine-err')) return;
   const name = document.getElementById('new-game-name').value.trim();
-  const tag  = document.getElementById('new-game-tag').value.trim();
-  const tplIdx = document.getElementById('new-game-template').value;
-  if(!name){ toast('Enter a game name.'); return; }
-  let code, attempts=0;
-  do { code=genCode(); const s=await db.ref('games/'+code).once('value'); if(!s.exists()) break; } while(++attempts<10);
-  await db.ref('games/'+code).set({meta:{name,tag:tag||'',status:'open',createdAt:Date.now(),adminId:currentAdminId}});
-  // load template bets if selected
-  if(tplIdx!=='') {
-    const tpls=getTemplates(), tpl=tpls[parseInt(tplIdx)];
-    if(tpl && tpl.bets && tpl.bets.length>0) {
-      const betUpdates={};
-      tpl.bets.forEach(b=>{ betUpdates[`b${Date.now()}_${Math.random().toString(36).slice(2,6)}`]={phrase:b.phrase,line:b.line,finalCount:null,result:null}; });
-      await db.ref(`games/${code}/bets`).set(betUpdates);
-    }
+  const tag = document.getElementById('new-game-tag').value.trim();
+  if(!name){ toast('Please define a match name instance.'); return; }
+  
+  let code = genCode();
+  try {
+    await db.ref('games/'+code).set({
+      meta:{name, tag:tag||'', status:'open', createdAt:Date.now(), adminId:currentAdminId}
+    });
+    LS.set(adminCodeKey(), code);
+    adminGameCode = code;
+    document.getElementById('new-game-name').value = '';
+    document.getElementById('new-game-tag').value = '';
+    document.getElementById('admin-create-section').style.display = 'none';
+    document.getElementById('admin-active-section').style.display = 'flex';
+    document.getElementById('admin-game-code').textContent = code;
+    attachAdminListener(code);
+  } catch(e) {
+    err('admin-engine-err', "Write Interrupted: Ensure Realtime Database rules match Step 4 completely.");
   }
-  LS.set(adminCodeKey(),code);
-  adminGameCode = code;
-  document.getElementById('new-game-name').value = '';
-  document.getElementById('new-game-tag').value  = '';
-  document.getElementById('new-game-template').value = '';
-  document.getElementById('admin-create-section').style.display = 'none';
-  document.getElementById('admin-active-section').style.display = 'flex';
-  document.getElementById('admin-game-code').textContent = code;
-  attachAdminListener(code);
 }
 
-// ════════════════════════════════════════════════════════
-// ADMIN — LISTENER + RENDER
-// ════════════════════════════════════════════════════════
 function attachAdminListener(code) {
   detachListeners();
-  subscribe(db.ref('games/'+code), snap=>{ if(!snap.exists()) return; renderAdmin(snap.val()); });
+  subscribe(db.ref('games/'+code), snap=>{ if(snap.exists()) renderAdmin(snap.val()); });
 }
 
 function renderAdmin(data) {
   const meta=data.meta||{}, bets=data.bets||{}, players=data.players||{}, status=meta.status||'open';
-  document.getElementById('admin-game-name').textContent  = meta.name||'';
+  document.getElementById('admin-game-name').textContent = meta.name||'';
   document.getElementById('admin-status-badge').innerHTML = statusPill(status);
   const pList=Object.values(players), subCount=pList.filter(p=>p.submitted).length;
-  document.getElementById('admin-submit-count').textContent = pList.length ? `${subCount} / ${pList.length} submitted` : '';
+  document.getElementById('admin-submit-count').textContent = pList.length ? `${subCount} / ${pList.length} submissions in` : 'No players connected yet.';
 
-  // Bets
   const betEntries=Object.entries(bets), betsEl=document.getElementById('admin-bets-list');
-  if(betEntries.length===0){ betsEl.innerHTML='<div class="t-muted t-center">No bets added yet.</div>'; }
+  if(betEntries.length===0){ betsEl.innerHTML='<div class="t-muted t-center">No lines assigned.</div>'; }
   else {
     betsEl.innerHTML=betEntries.map(([id,b])=>{
-      const countStr  = b.finalCount!=null ? `<span class="t-mono t-sm t-muted">Final: ${b.finalCount}</span>` : '';
+      const countStr = b.finalCount!=null ? `<span class="t-mono t-muted" style="font-size:12px;">Final: ${b.finalCount}</span>` : '';
       const resultStr = b.result ? `<span class="rbadge ${b.result==='higher'?'rbadge-win':'rbadge-loss'}">${b.result==='higher'?'▲ HI':'▼ LO'}</span>` : '';
-      const editBtn   = status!=='ended' ? `<button class="btn btn-sm btn-ghost" onclick="openEditBetModal('${id}','${encodeURIComponent(b.phrase)}',${b.line})" title="Edit">✏️</button>` : '';
-      const removeBtn = status!=='ended' ? `<button class="btn btn-sm btn-red-ghost" onclick="confirmDeleteBet('${id}','${encodeURIComponent(b.phrase)}')">✕</button>` : '';
-      return `<div class="admin-bet-row"><div class="admin-bet-info"><div class="admin-bet-phrase">"${b.phrase}"</div><div class="admin-bet-meta">Line: ${b.line}</div></div><div style="display:flex;align-items:center;gap:6px;">${countStr}${resultStr}${editBtn}${removeBtn}</div></div>`;
+      const editBtn = status!=='ended' ? `<button class="btn btn-sm btn-ghost" onclick="openEditBetModal('${id}','${encodeURIComponent(b.phrase)}',${b.line})">✏️</button>` : '';
+      return `<div class="admin-bet-row"><div class="admin-bet-info"><div class="admin-bet-phrase">"${b.phrase}"</div><div class="admin-bet-meta">Target: ${b.line}</div></div><div style="display:flex;align-items:center;gap:6px;">${countStr}${resultStr}${editBtn}</div></div>`;
     }).join('');
   }
 
-  // Players
   document.getElementById('admin-player-count').textContent = pList.length;
   const playersEl = document.getElementById('admin-player-list');
-  if(pList.length===0){ playersEl.innerHTML='<div class="t-muted t-center">Waiting for players...</div>'; }
+  if(pList.length===0){ playersEl.innerHTML='<div class="t-muted t-center">Awaiting entry connections...</div>'; }
   else {
-    const sorted=[...pList].sort((a,b)=>(b.submitted?1:0)-(a.submitted?1:0)||a.name.localeCompare(b.name));
-    playersEl.innerHTML=sorted.map(p=>{
-      const pKey=sanitizeKey(p.name);
-      const scoreHtml=p.score!=null ? `<span class="t-mono t-accent" style="font-size:16px;">${p.score}pts</span>` : '';
-      const subHtml  =p.submitted ? `<span class="rbadge rbadge-win">✓ In</span>` : `<span class="t-muted t-sm">Picking...</span>`;
-      const unlockBtn= (status==='locked' && p.submitted) ? `<button class="btn btn-sm btn-ghost" onclick="unlockPlayer('${pKey}')" title="Unlock this player">🔓</button>` : '';
+    playersEl.innerHTML=pList.map(p=>{
+      const scoreHtml=p.score!=null ? `<span class="t-mono t-accent">${p.score}pts</span>` : '';
+      const subHtml = p.submitted ? `<span class="rbadge rbadge-win">Locked</span>` : `<span class="t-muted" style="font-size:12px;">Drafting...</span>`;
+      const unlockBtn= (status==='locked' && p.submitted) ? `<button class="btn btn-sm btn-ghost" onclick="unlockPlayer('${sanitizeKey(p.name)}')">Unlock</button>` : '';
       return `<div class="player-row"><span>${p.name}</span><div style="display:flex;align-items:center;gap:6px;">${scoreHtml}${subHtml}${unlockBtn}</div></div>`;
     }).join('');
   }
 
-  // Controls
-  document.getElementById('admin-add-bet').style.display              = status==='open'   ? 'block' : 'none';
-  document.getElementById('btn-lock').style.display                   = status==='open'   ? 'block' : 'none';
-  document.getElementById('btn-unlock').style.display                 = status==='locked' ? 'block' : 'none';
-  document.getElementById('admin-end-section').style.display          = status==='locked' ? 'block' : 'none';
-  document.getElementById('admin-leaderboard-section').style.display  = status==='ended'  ? 'block' : 'none';
+  document.getElementById('admin-add-bet').style.display = status==='open' ? 'block' : 'none';
+  document.getElementById('btn-lock').style.display = status==='open' ? 'block' : 'none';
+  document.getElementById('btn-unlock').style.display = status==='locked' ? 'block' : 'none';
+  document.getElementById('admin-end-section').style.display = status==='locked' ? 'block' : 'none';
+  document.getElementById('admin-leaderboard-section').style.display = status==='ended' ? 'block' : 'none';
 
   if(status==='locked') renderCountInputs(bets);
-  if(status==='ended')  renderAdminLeaderboard(players);
+  if(status==='ended') renderAdminLeaderboard(players);
 }
 
-// ════════════════════════════════════════════════════════
-// ADMIN — BETS
-// ════════════════════════════════════════════════════════
 async function addBet() {
   const phrase=document.getElementById('bet-phrase').value.trim();
   const line=parseFloat(document.getElementById('bet-line').value);
-  if(!phrase)    { toast('Enter a phrase.'); return; }
-  if(isNaN(line)){ toast('Enter a valid line number.'); return; }
+  if(!phrase || isNaN(line)){ toast('Please construct formal statement and baseline value.'); return; }
   await db.ref(`games/${adminGameCode}/bets/b${Date.now()}`).set({phrase,line,finalCount:null,result:null});
   document.getElementById('bet-phrase').value='';
   document.getElementById('bet-line').value='';
-  toast('Bet added.');
+  toast('Metric line initialized.');
 }
-function confirmDeleteBet(id, encodedPhrase) { const phrase=decodeURIComponent(encodedPhrase); openModal('Delete Bet',`Remove "${phrase}"? This cannot be undone.`,()=>deleteBet(id)); }
-async function deleteBet(id) { await db.ref(`games/${adminGameCode}/bets/${id}`).remove(); toast('Bet removed.'); }
 
-// ════════════════════════════════════════════════════════
-// ADMIN — GAME CONTROL
-// ════════════════════════════════════════════════════════
-function confirmLock() { openModal('Lock Betting','Students will no longer be able to submit picks. You can unlock again if needed.',lockGame,'Lock It',false); }
-async function lockGame()   { await db.ref(`games/${adminGameCode}/meta/status`).set('locked'); toast('Betting locked.'); }
-async function unlockGame() { await db.ref(`games/${adminGameCode}/meta/status`).set('open');   toast('Betting re-opened.'); }
+function openEditBetModal(id, p, l) {
+  editingBetId = id;
+  document.getElementById('edit-bet-phrase').value = decodeURIComponent(p);
+  document.getElementById('edit-bet-line').value = l;
+  document.getElementById('edit-bet-modal').classList.add('show');
+}
+function closeEditBetModal() { document.getElementById('edit-bet-modal').classList.remove('show'); editingBetId = null; }
+async function saveEditBet() {
+  const phrase = document.getElementById('edit-bet-phrase').value.trim();
+  const line = parseFloat(document.getElementById('edit-bet-line').value);
+  if(editingBetId && adminGameCode && phrase && !isNaN(line)) {
+    await db.ref(`games/${adminGameCode}/bets/${editingBetId}`).update({phrase,line});
+    closeEditBetModal();
+    toast('Data adjustment distributed.');
+  }
+}
+
+async function unlockPlayer(pKey) {
+  await db.ref(`games/${adminGameCode}/players/${pKey}`).update({submitted:false});
+  toast('Profile submission unlocked.');
+}
+
+function confirmLock() { openModal('Suspend Choices','Lock submission parameters for structural review?',lockGame); }
+async function lockGame() { await db.ref(`games/${adminGameCode}/meta/status`).set('locked'); }
+async function unlockGame() { await db.ref(`games/${adminGameCode}/meta/status`).set('open'); }
 
 function renderCountInputs(bets) {
   const el=document.getElementById('admin-counts-list'), entries=Object.entries(bets);
-  if(entries.length===0){ el.innerHTML='<div class="t-muted t-center">No bets to score.</div>'; return; }
   el.innerHTML=entries.map(([id,b])=>`
     <div class="count-row">
       <div class="count-phrase">"${b.phrase}"</div>
-      <div class="count-line">Line ${b.line}</div>
-      <input type="number" class="count-input" id="cnt-${id}" min="0" placeholder="0" value="${b.finalCount!=null?b.finalCount:''}">
+      <input type="number" class="count-input" id="cnt-${id}" step="1" value="${b.finalCount!=null?b.finalCount:''}">
     </div>`).join('');
 }
 
-function confirmEndGame() { openModal('End Game','This calculates final scores and reveals results to all players. This cannot be undone.',endGame,'End Game'); }
-
+function confirmEndGame() { openModal('Resolve Room Results','Evaluate metric entries to distribute final score sheets?',endGame); }
 async function endGame() {
-  const betsSnap   = await db.ref(`games/${adminGameCode}/bets`).once('value');
-  const metaSnap   = await db.ref(`games/${adminGameCode}/meta`).once('value');
-  const bets       = betsSnap.val()||{};
-  const betEntries = Object.entries(bets);
-  if(betEntries.length===0){ toast('No bets to score.'); return; }
-
-  const betResults={};
+  const betsSnap = await db.ref(`games/${adminGameCode}/bets`).once('value');
+  const metaSnap = await db.ref(`games/${adminGameCode}/meta`).once('value');
+  const bets = betsSnap.val()||{}, betEntries = Object.entries(bets);
+  
+  const results={};
   for(const [id,b] of betEntries){
-    const inp=document.getElementById(`cnt-${id}`);
-    if(!inp||inp.value===''){ toast(`Enter count for "${b.phrase}".`); return; }
-    const count=parseFloat(inp.value);
-    if(isNaN(count)||count<0){ toast(`Invalid count for "${b.phrase}".`); return; }
-    betResults[id]={count, result: count>b.line?'higher':'lower'};
+    const val = parseFloat(document.getElementById(`cnt-${id}`).value);
+    if(isNaN(val)){ toast('All tracking slots must resolve to numeric counts.'); return; }
+    results[id]={val, res: val>b.line?'higher':'lower'};
   }
 
   const playersSnap = await db.ref(`games/${adminGameCode}/players`).once('value');
-  const players     = playersSnap.val()||{};
-  const updates     = {'meta/status':'ended'};
+  const players = playersSnap.val()||{}, updates = {'meta/status':'ended'};
 
-  for(const [id,{count,result}] of Object.entries(betResults)){
-    updates[`bets/${id}/finalCount`]=count;
-    updates[`bets/${id}/result`]    =result;
+  for(const [id,{val,res}] of Object.entries(results)){
+    updates[`bets/${id}/finalCount`]=val;
+    updates[`bets/${id}/result`]=res;
   }
 
-  const scoredPlayers={};
+  const historicalPlayers={};
+  const seasonUpdate = getSeason();
+
   for(const [pKey,p] of Object.entries(players)){
     let score=0;
-    if(p.submitted){ for(const [bId,{result}] of Object.entries(betResults)){ if((p.picks||{})[bId]===result) score++; } }
+    if(p.submitted){
+      for(const [bId,{res}] of Object.entries(results)){
+        if((p.picks||{})[bId]===res) score++;
+      }
+    }
     updates[`players/${pKey}/score`]=score;
-    scoredPlayers[pKey]={...p,score};
+    historicalPlayers[pKey]={...p,score};
+    seasonUpdate[p.name] = (seasonUpdate[p.name]||0) + score;
   }
 
   await db.ref(`games/${adminGameCode}`).update(updates);
+  saveSeason(seasonUpdate);
 
-  const finalBets={};
-  for(const [id,b] of betEntries) finalBets[id]={...b,finalCount:betResults[id].count,result:betResults[id].result};
+  const historyObj = {code:adminGameCode, name:metaSnap.val().name, date:Date.now(), players:historicalPlayers};
+  const currentHist = getHistory();
+  currentHist.unshift(historyObj);
+  saveHistory(currentHist);
 
-  const historyGame={code:adminGameCode, name:metaSnap.val()?.name||'', tag:metaSnap.val()?.tag||'', date:Date.now(), bets:finalBets, players:scoredPlayers};
-  saveGameToHistory(historyGame);
-  addToSeason(scoredPlayers);
   LS.del(adminCodeKey());
-  toast('Game ended — scores calculated!');
+  toast('Instance locked and tabulated.');
 }
 
 function renderAdminLeaderboard(players) {
   const el=document.getElementById('admin-leaderboard-content');
-  const sorted=Object.values(players).filter(p=>p.score!=null).sort((a,b)=>b.score-a.score);
-  if(sorted.length===0){ el.innerHTML='<div class="t-muted t-center">No scores yet.</div>'; return; }
-  el.innerHTML=sorted.map((p,i)=>`<div class="lb-row"><div class="lb-rank ${i<3?'gold':''}">${i+1}</div><div class="lb-name">${p.name}</div><div class="lb-score">${p.score}pts</div></div>`).join('');
+  const sorted=Object.values(players).sort((a,b)=>(b.score||0)-(a.score||0));
+  el.innerHTML=sorted.map((p,i)=>`<div class="lb-row"><div class="lb-rank">${i+1}</div><div class="lb-name">${p.name}</div><div class="lb-score">${p.score||0}pts</div></div>`).join('');
 }
-function copyCode() { if(!adminGameCode) return; navigator.clipboard.writeText(adminGameCode).then(()=>toast('Code copied!')); }
+function copyCode() { navigator.clipboard.writeText(adminGameCode).then(()=>toast('Room key copied.')); }
 
-// ════════════════════════════════════════════════════════
-// HISTORY
-// ════════════════════════════════════════════════════════
+// LOG MANAGEMENT METHODS
 function renderHistoryList() {
   const h=getHistory(), el=document.getElementById('history-list-content');
-  document.getElementById('history-list-section').style.display   = 'flex';
-  document.getElementById('history-detail-section').style.display = 'none';
-  currentHistoryIdx = null;
-  if(h.length===0){ el.innerHTML='<div class="t-muted t-center">No past games yet.</div>'; return; }
-  el.innerHTML=h.map((g,i)=>{
-    const players=[...Object.values(g.players||{})].sort((a,b)=>(b.score||0)-(a.score||0));
-    const topStr=players[0] ? `🏆 ${players[0].name} (${players[0].score}pts)` : '';
-    const tagStr=g.tag ? `<span class="rbadge rbadge-pending" style="margin-top:2px;">${g.tag}</span>` : '';
-    return `<div class="history-item" onclick="showHistoryDetail(${i})">
-      <div class="history-info">
-        <div class="history-name">${g.name}</div>
-        <div class="history-meta">${formatDate(g.date)} · ${Object.keys(g.bets||{}).length} bets · ${Object.keys(g.players||{}).length} players</div>
-        ${tagStr}
-        ${topStr?`<div class="t-muted t-sm" style="margin-top:2px;">${topStr}</div>`:''}
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
-        <button class="btn btn-sm btn-red-ghost" onclick="event.stopPropagation();confirmTrashGame(${i})" title="Delete">🗑️</button>
-        <span style="color:var(--muted);">›</span>
-      </div>
-    </div>`;
-  }).join('');
+  if(h.length===0){ el.innerHTML='<div class="t-muted t-center">Historical database empty.</div>'; }
+  else {
+    el.innerHTML=h.map(g=>`<div class="history-item"><div class="history-info"><div class="history-name">${g.name}</div><div class="history-meta">${Object.keys(g.players||{}).length} Participants engaged</div></div></div>`).join('');
+  }
 }
-function showHistoryDetail(idx) {
-  const g=getHistory()[idx]; if(!g) return;
-  currentHistoryIdx = idx;
-  document.getElementById('history-list-section').style.display   = 'none';
-  document.getElementById('history-detail-section').style.display = 'flex';
-  const tagHtml=g.tag?`<span class="rbadge rbadge-pending">${g.tag}</span>`:'';
-  document.getElementById('history-detail-header').innerHTML=`<div style="font-weight:700;font-size:16px;">${g.name}</div><div class="t-muted t-sm" style="margin-top:2px;">${formatDate(g.date)}</div>${tagHtml?`<div style="margin-top:4px;">${tagHtml}</div>`:''}`;
-  const betEntries=Object.entries(g.bets||{});
-  document.getElementById('history-detail-bets').innerHTML=betEntries.length===0 ? '<div class="t-muted">No bets recorded.</div>'
-    : betEntries.map(([,b])=>`<div class="admin-bet-row"><div class="admin-bet-info"><div class="admin-bet-phrase">"${b.phrase}"</div><div class="admin-bet-meta">Line: ${b.line}</div></div><div style="display:flex;align-items:center;gap:8px;"><span class="t-mono t-sm t-muted">Final: ${b.finalCount??'—'}</span>${b.result?`<span class="rbadge ${b.result==='higher'?'rbadge-win':'rbadge-loss'}">${b.result==='higher'?'▲ HI':'▼ LO'}</span>`:''}</div></div>`).join('');
-  const sorted=Object.values(g.players||{}).sort((a,b)=>(b.score||0)-(a.score||0));
-  document.getElementById('history-detail-lb').innerHTML=sorted.length===0 ? '<div class="t-muted">No players.</div>'
-    : sorted.map((p,i)=>`<div class="lb-row"><div class="lb-rank ${i<3?'gold':''}">${i+1}</div><div class="lb-name">${p.name}</div><div class="lb-score">${p.score??0}pts</div></div>`).join('');
-}
-function closeHistoryDetail() {
-  document.getElementById('history-detail-section').style.display = 'none';
-  document.getElementById('history-list-section').style.display   = 'flex';
-}
-
-// ════════════════════════════════════════════════════════
-// SEASON
-// ════════════════════════════════════════════════════════
 function renderSeasonLB() {
-  const entries=Object.entries(getSeason()).sort((a,b)=>b[1]-a[1]), el=document.getElementById('season-lb-content');
-  if(entries.length===0){ el.innerHTML='<div class="t-muted t-center">No season data yet.</div>'; return; }
-  el.innerHTML=entries.map(([name,score],i)=>`
-    <div class="lb-row">
-      <div class="lb-rank ${i<3?'gold':''}">${i+1}</div>
-      <div class="lb-name">${name}</div>
-      <div class="lb-score">${score}pts</div>
-      <button class="btn btn-sm btn-red-ghost" onclick="confirmTrashPlayer('${encodeURIComponent(name)}')" title="Delete" style="flex-shrink:0;">🗑️</button>
-    </div>`).join('');
+  const s=getSeason(), entries=Object.entries(s).sort((a,b)=>b[1]-a[1]), el=document.getElementById('season-lb-content');
+  if(entries.length===0){ el.innerHTML='<div class="t-muted t-center">No structural historical totals recorded.</div>'; }
+  else {
+    el.innerHTML=entries.map(([n,s],i)=>`<div class="lb-row"><div class="lb-rank">${i+1}</div><div class="lb-name">${n}</div><div class="lb-score">${s}pts</div></div>`).join('');
+  }
 }
-function confirmResetSeason() { openModal('Reset Season','This will clear all cumulative season scores. Cannot be undone.',()=>{ saveSeason({}); renderSeasonLB(); toast('Season reset.'); }); }
+function confirmResetSeason() { openModal('Purge Total Array','Wipe master season point values?',()=>{saveSeason({}); renderSeasonLB();}); }
 
-// ════════════════════════════════════════════════════════
-// TRASH — HISTORY GAME DELETE/RESTORE
-// ════════════════════════════════════════════════════════
-function confirmTrashGame(idx) {
-  const g=getHistory()[idx];
-  if(!g) return;
-  openModal('Delete Game',`Move "${g.name}" to trash? Its scores will be removed from the season leaderboard.`,()=>trashGame(idx));
-}
-function trashGame(idx) {
-  const h=getHistory(), game=h[idx];
-  if(!game) return;
-  // subtract this game's scores from season
-  const s=getSeason();
-  Object.values(game.players||{}).forEach(p=>{
-    if(p.score!=null && s[p.name]!=null){
-      s[p.name]-=p.score;
-      if(s[p.name]<=0) delete s[p.name];
-    }
-  });
-  saveSeason(s);
-  // push to trash
-  const trash=getTrash();
-  trash.unshift({type:'game',data:game,deletedAt:Date.now()});
-  saveTrash(trash);
-  // remove from history
-  h.splice(idx,1);
-  saveHistory(h);
-  renderHistoryList();
-  renderSeasonLB();
-  toast('Game moved to trash.');
-}
-function restoreGame(trashIdx) {
-  const trash=getTrash(), item=trash[trashIdx];
-  if(!item||item.type!=='game') return;
-  // restore to history
-  const h=getHistory();
-  h.unshift(item.data);
-  saveHistory(h.slice(0,50));
-  // re-add scores to season
-  const s=getSeason();
-  Object.values(item.data.players||{}).forEach(p=>{
-    if(p.score!=null) s[p.name]=(s[p.name]||0)+p.score;
-  });
-  saveSeason(s);
-  // remove from trash
-  trash.splice(trashIdx,1);
-  saveTrash(trash);
-  renderTrash();
-  toast('Game restored to history.');
-}
-
-// ════════════════════════════════════════════════════════
-// TRASH — SEASON PLAYER DELETE/RESTORE
-// ════════════════════════════════════════════════════════
-function confirmTrashPlayer(encodedName) {
-  const name=decodeURIComponent(encodedName);
-  openModal('Remove Player',`Move ${name}'s season record to trash?`,()=>trashPlayer(encodedName));
-}
-function trashPlayer(encodedName) {
-  const name=decodeURIComponent(encodedName);
-  const s=getSeason();
-  const score=s[name];
-  if(score==null) return;
-  delete s[name];
-  saveSeason(s);
-  const trash=getTrash();
-  trash.unshift({type:'player',name,score,deletedAt:Date.now()});
-  saveTrash(trash);
-  renderSeasonLB();
-  toast(`${name} moved to trash.`);
-}
-function restorePlayer(trashIdx) {
-  const trash=getTrash(), item=trash[trashIdx];
-  if(!item||item.type!=='player') return;
-  const s=getSeason();
-  s[item.name]=(s[item.name]||0)+item.score;
-  saveSeason(s);
-  trash.splice(trashIdx,1);
-  saveTrash(trash);
-  renderTrash();
-  toast(`${item.name} restored to season.`);
-}
-
-// ════════════════════════════════════════════════════════
-// TRASH — RENDER + EMPTY
-// ════════════════════════════════════════════════════════
-function renderTrash() {
-  const trash=getTrash(), el=document.getElementById('trash-content');
-  if(trash.length===0){ el.innerHTML='<div class="t-muted t-center">Trash is empty.</div>'; return; }
-  el.innerHTML=trash.map((item,i)=>{
-    if(item.type==='game'){
-      const players=Object.values(item.data.players||{}).sort((a,b)=>(b.score||0)-(a.score||0));
-      const topStr=players[0]?`🏆 ${players[0].name} (${players[0].score}pts)`:'';
-      return `<div class="admin-bet-row">
-        <div class="admin-bet-info">
-          <div class="admin-bet-phrase">${item.data.name}</div>
-          <div class="admin-bet-meta">Game · ${formatDate(item.data.date)}${topStr?' · '+topStr:''}</div>
-        </div>
-        <button class="btn btn-sm btn-ghost" onclick="restoreGame(${i})" style="flex-shrink:0;">Restore</button>
-      </div>`;
-    } else {
-      return `<div class="admin-bet-row">
-        <div class="admin-bet-info">
-          <div class="admin-bet-phrase">${item.name}</div>
-          <div class="admin-bet-meta">Player · ${item.score}pts season total</div>
-        </div>
-        <button class="btn btn-sm btn-ghost" onclick="restorePlayer(${i})" style="flex-shrink:0;">Restore</button>
-      </div>`;
-    }
-  }).join('');
-}
-function confirmEmptyTrash() {
-  const trash=getTrash();
-  if(trash.length===0){ toast('Trash is already empty.'); return; }
-  openModal('Empty Trash',`Permanently delete all ${trash.length} item(s)? This cannot be undone.`,()=>{ saveTrash([]); renderTrash(); toast('Trash emptied.'); });
-}
-
-// ════════════════════════════════════════════════════════
-// STUDENT — LANDING
-// ════════════════════════════════════════════════════════
+// STUDENT ACTIONS
 function goStudentJoin() {
-  const lastName=LS.get('cl_student_name'), lastCode=LS.get('cl_student_code');
-  if(lastName) document.getElementById('join-name').value=lastName;
-  if(lastCode) document.getElementById('join-code').value=lastCode;
+  clearErr('join-err');
+  const n=LS.get('sh_student_name'), c=LS.get('sh_student_code');
+  if(n) document.getElementById('join-name').value=n;
+  if(c) document.getElementById('join-code').value=c;
   showView('student-join');
 }
 function checkRejoin() {
-  const name=LS.get('cl_student_name'), code=LS.get('cl_student_code');
-  if(!name||!code){ document.getElementById('rejoin-card').style.display='none'; return; }
-  try {
-    db.ref(`games/${code}/meta`).once('value').then(snap=>{
-      if(!snap.exists() || snap.val().status==='ended'){
-        LS.del('cl_student_code');
-        document.getElementById('rejoin-card').style.display='none'; return;
-      }
-      document.getElementById('rejoin-game-name').textContent   = snap.val().name;
-      document.getElementById('rejoin-player-name').textContent = `Playing as ${name}`;
-      document.getElementById('rejoin-card').style.display = 'block';
-    });
-  } catch {}
+  if (!initialized) return;
+  const name=LS.get('sh_student_name'), code=LS.get('sh_student_code');
+  if(!name || !code) return;
+  db.ref(`games/${code}/meta`).once('value').then(snap=>{
+    if(snap.exists() && snap.val().status!=='ended'){
+      document.getElementById('rejoin-game-name').textContent = snap.val().name;
+      document.getElementById('rejoin-player-name').textContent = `Re-enter profile: ${name}`;
+      document.getElementById('rejoin-card').style.display='block';
+    }
+  }).catch(()=>{});
 }
-async function rejoinLastGame() {
-  document.getElementById('join-code').value = LS.get('cl_student_code')||'';
-  document.getElementById('join-name').value = LS.get('cl_student_name')||'';
-  showView('student-join');
-}
-function clearStudentMemory() { LS.del('cl_student_name'); LS.del('cl_student_code'); document.getElementById('rejoin-card').style.display='none'; toast('Cleared.'); }
+function rejoinLastGame() { joinGame(); }
+function clearStudentMemory() { LS.del('sh_student_name'); LS.del('sh_student_code'); document.getElementById('rejoin-card').style.display='none'; }
 
-// ════════════════════════════════════════════════════════
-// STUDENT — JOIN
-// ════════════════════════════════════════════════════════
 async function joinGame() {
   clearErr('join-err');
+  if(!verifyDbConnection('join-err')) return;
   const code=document.getElementById('join-code').value.trim().toUpperCase();
   const name=document.getElementById('join-name').value.trim();
-  if(code.length<2){ err('join-err','Enter a game code.'); return; }
-  if(!name)        { err('join-err','Enter your name.');   return; }
-  const metaSnap=await db.ref(`games/${code}/meta`).once('value');
-  if(!metaSnap.exists())               { err('join-err','Game not found. Check the code.'); return; }
-  if(metaSnap.val().status==='ended')  { err('join-err','This game has already ended.'); return; }
-  const pKey=sanitizeKey(name), pRef=db.ref(`games/${code}/players/${pKey}`), existing=await pRef.once('value');
-  if(existing.exists()){ const d=existing.val(); studentSubmitted=d.submitted||false; studentPicks=d.picks||{}; }
-  else { studentSubmitted=false; studentPicks={}; await pRef.set({name,joinedAt:Date.now(),submitted:false,score:null}); }
-  studentGameCode=code; studentKey=pKey;
-  LS.set('cl_student_name',name); LS.set('cl_student_code',code);
-  document.getElementById('sg-player-name').textContent=name;
+  if(code.length!==4 || !name){ err('join-err','Specify valid room key token and your clean name.'); return; }
+
+  const snap = await db.ref(`games/${code}`).once('value');
+  if(!snap.exists()){ err('join-err','Active target pool room not recognized.'); return; }
+  if(snap.val().meta.status==='ended'){ err('join-err','Target instance has completed running lifecycle.'); return; }
+
+  studentGameCode=code; studentKey=sanitizeKey(name);
+  LS.set('sh_student_name', name); LS.set('sh_student_code', code);
+  
+  const pRef = db.ref(`games/${code}/players/${studentKey}`);
+  const pSnap = await pRef.once('value');
+  if(pSnap.exists()){
+    studentSubmitted = !!pSnap.val().submitted;
+    studentPicks = pSnap.val().picks || {};
+  } else {
+    studentSubmitted = false; studentPicks = {};
+    await pRef.set({name, submitted:false, score:null, joinedAt:Date.now()});
+  }
+
+  document.getElementById('sg-player-name').textContent = name;
   showView('student-game');
   attachStudentListener(code);
 }
 
-// ════════════════════════════════════════════════════════
-// STUDENT — LISTENER + RENDER
-// ════════════════════════════════════════════════════════
 function attachStudentListener(code) {
-  detachListeners();
-  subscribe(db.ref('games/'+code),snap=>{ if(!snap.exists()) return; lastGameData=snap.val(); renderStudent(lastGameData); });
+  subscribe(db.ref('games/'+code), snap=>{ if(snap.exists()){ lastGameData=snap.val(); renderStudent(snap.val()); }});
 }
 
 function renderStudent(data) {
   const meta=data.meta||{}, bets=data.bets||{}, players=data.players||{}, status=meta.status||'open';
-  const player=players[studentKey]||{}, isEnded=status==='ended', isLocked=status==='locked';
-  // Sync local submitted state from Firebase — allows admin per-player unlock to take effect
-  if(player.submitted !== undefined) studentSubmitted = !!player.submitted;
-  // Sync picks from Firebase if local picks are empty (e.g. after page reload or unlock)
-  if(player.picks && Object.keys(studentPicks).length===0) studentPicks={...player.picks};
-  const hasSubmitted = studentSubmitted;
+  const me=players[studentKey]||{};
+  studentSubmitted = !!me.submitted;
+  if(me.picks && Object.keys(studentPicks).length===0) studentPicks={...me.picks};
 
-  document.getElementById('sg-name').textContent   = meta.name||'';
-  document.getElementById('sg-status').innerHTML   = statusPill(status);
+  document.getElementById('sg-name').textContent = meta.name||'';
+  document.getElementById('sg-status').innerHTML = statusPill(status);
 
-  const betsEl=document.getElementById('sg-bets-list'), betEntries=Object.entries(bets);
-  const playerPicks=player.picks||studentPicks;
-
-  if(!isEnded) {
-    if(betEntries.length===0){ betsEl.innerHTML='<div class="t-muted t-center" style="padding:20px 0;">Waiting for admin to add bets...</div>'; }
+  const betsEl=document.getElementById('sg-bets-list'), entries=Object.entries(bets);
+  if(status!=='ended') {
+    if(entries.length===0){ betsEl.innerHTML='<div class="t-muted t-center">Constructing proposition metrics...</div>'; }
     else {
-      const canPick=!hasSubmitted&&!isLocked;
-      betsEl.innerHTML=betEntries.map(([id,b])=>{
-        const pick=playerPicks[id]||null, lockCls=!canPick?'locked':'';
+      const activeState = !studentSubmitted && status==='open';
+      betsEl.innerHTML=entries.map(([id,b])=>{
+        const pk = studentPicks[id]||null, lCls = !activeState?'locked':'';
         return `<div class="bet-card">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+          <div style="display:flex;justify-content:space-between;">
             <div class="bet-phrase">"${b.phrase}"</div>
             <span class="bet-line-pill">Line: ${b.line}</span>
           </div>
           <div class="pick-row">
-            <button class="pick-btn ${pick==='higher'?'higher':''} ${lockCls}" ${canPick?`onclick="makePick('${id}','higher')"`:''}>▲ &nbsp;Higher</button>
-            <button class="pick-btn ${pick==='lower'?'lower':''} ${lockCls}"   ${canPick?`onclick="makePick('${id}','lower')"` :''}> ▼ &nbsp;Lower</button>
+            <button class="pick-btn ${pk==='higher'?'higher':''} ${lCls}" ${activeState?`onclick="makePick('${id}','higher')"`:''}>▲ Higher</button>
+            <button class="pick-btn ${pk==='lower'?'lower':''} ${lCls}" ${activeState?`onclick="makePick('${id}','lower')"`:''}>▼ Lower</button>
           </div>
         </div>`;
       }).join('');
     }
   } else { betsEl.innerHTML=''; }
 
-  document.getElementById('sg-submit-area').style.display   = 'none';
+  document.getElementById('sg-submit-area').style.display = 'none';
   document.getElementById('sg-submitted-msg').style.display = 'none';
-  document.getElementById('sg-locked-msg').style.display    = 'none';
-  document.getElementById('sg-results').style.display       = 'none';
+  document.getElementById('sg-locked-msg').style.display = 'none';
+  document.getElementById('sg-results').style.display = 'none';
 
-  if(isEnded)            { document.getElementById('sg-results').style.display='flex'; renderStudentResults(bets,players,player,playerPicks); }
-  else if(hasSubmitted)  { document.getElementById('sg-submitted-msg').style.display='block'; }
-  else if(isLocked)      { document.getElementById('sg-locked-msg').style.display='block'; }
-  else                   { document.getElementById('sg-submit-area').style.display='block'; }
+  if(status==='ended') { document.getElementById('sg-results').style.display='flex'; renderStudentResults(bets,players,me); }
+  else if(studentSubmitted) { document.getElementById('sg-submitted-msg').style.display='block'; }
+  else if(status==='locked') { document.getElementById('sg-locked-msg').style.display='block'; }
+  else { document.getElementById('sg-submit-area').style.display='block'; }
 }
 
-function renderStudentResults(bets,players,player,playerPicks) {
-  const myScore=player.score??0, betCount=Object.keys(bets).length;
-  document.getElementById('sg-my-score').textContent     = `${myScore}`;
-  document.getElementById('sg-my-score-sub').textContent = `${myScore} of ${betCount} correct`;
+function makePick(id, choice) {
+  if(studentSubmitted) return;
+  studentPicks[id]=choice;
+  if(lastGameData) renderStudent(lastGameData);
+}
 
+async function submitPicks() {
+  const keys = Object.keys(lastGameData.bets||{});
+  for(const k of keys){ if(!studentPicks[k]){ toast('All prediction choices must be explicitly designated.'); return; } }
+  await db.ref(`games/${studentGameCode}/players/${studentKey}`).update({submitted:true, picks:studentPicks});
+  studentSubmitted=true;
+  toast('Predictions locked down.');
+}
+
+function renderStudentResults(bets, players, me) {
+  document.getElementById('sg-my-score').textContent = me.score??0;
+  document.getElementById('sg-my-score-sub').textContent = `${me.score??0} Correct Matches Generated`;
+  
   document.getElementById('sg-bet-breakdown').innerHTML=Object.entries(bets).map(([id,b])=>{
-    const pick=playerPicks[id], won=pick&&b.result&&pick===b.result, noPick=!pick;
+    const pk=studentPicks[id], win=pk && b.result && pk===b.result;
     return `<div class="bet-result-row">
       <div style="flex:1;">
         <div class="bet-result-phrase">"${b.phrase}"</div>
-        <div class="bet-result-meta">Line: ${b.line} · Final: ${b.finalCount??'—'} · ${b.result?(b.result==='higher'?'▲ Higher':'▼ Lower'):'—'}</div>
-        ${pick?`<div class="t-muted t-sm" style="margin-top:2px;">Your pick: ${pick==='higher'?'▲ Higher':'▼ Lower'}</div>`:''}
+        <div class="t-muted" style="font-size:11px; margin-top:2px;">Line: ${b.line} · Final Count: ${b.finalCount}</div>
+        <div class="t-bold" style="font-size:12px; margin-top:2px; color:${win?'var(--accent)':'var(--red)'}">Selected: ${pk||'None'}</div>
       </div>
-      <div style="text-align:right;flex-shrink:0;">${noPick?`<span class="rbadge rbadge-pending">No Pick</span>`:`<span class="rbadge ${won?'rbadge-win':'rbadge-loss'}">${won?'✓ +1':'✗ 0'}</span>`}</div>
+      <span class="rbadge ${win?'rbadge-win':'rbadge-loss'}">${win?'✓ Win':'✗ Loss'}</span>
     </div>`;
   }).join('');
 
-  const myName=player.name||'', sorted=Object.values(players).filter(p=>p.score!=null).sort((a,b)=>b.score-a.score);
-  document.getElementById('sg-leaderboard-content').innerHTML=sorted.map((p,i)=>{
-    const isMe=p.name===myName;
-    return `<div class="lb-row" ${isMe?'style="background:var(--accent-dim);margin:0 -20px;padding:12px 20px;border-radius:8px;"':''}>
-      <div class="lb-rank ${i<3?'gold':''}">${i+1}</div>
-      <div class="lb-name">${p.name}${isMe?' <span class="t-muted t-sm">(you)</span>':''}</div>
-      <div class="lb-score">${p.score}pts</div>
-    </div>`;
-  }).join('');
+  const sorted=Object.values(players).sort((a,b)=>(b.score||0)-(a.score||0));
+  document.getElementById('sg-leaderboard-content').innerHTML=sorted.map((p,i)=>`<div class="lb-row"><div class="lb-rank">${i+1}</div><div class="lb-name">${p.name}</div><div class="lb-score">${p.score||0}pts</div></div>`).join('');
 }
 
-// ════════════════════════════════════════════════════════
-// STUDENT — PICKS / LEAVE
-// ════════════════════════════════════════════════════════
-function makePick(betId,choice) {
-  if(studentSubmitted) return;
-  studentPicks[betId]=choice;
-  if(lastGameData) renderStudent(lastGameData);
-}
-async function submitPicks() {
-  if(!studentGameCode||!studentKey) return;
-  const betsSnap=await db.ref(`games/${studentGameCode}/bets`).once('value');
-  const bets=betsSnap.val()||{}, betIds=Object.keys(bets);
-  if(betIds.length===0){ toast('No bets to pick yet.'); return; }
-  for(const id of betIds){ if(!studentPicks[id]){ toast('Pick Higher or Lower for every bet first.'); return; } }
-  await db.ref(`games/${studentGameCode}/players/${studentKey}`).update({submitted:true,picks:studentPicks});
-  studentSubmitted=true;
-  toast('Picks locked in — good luck!');
-}
-function confirmLeaveGame() {
-  if(studentSubmitted) openModal('Leave Game','Your picks are saved. You can rejoin with the same name and code.',leaveGame,'Leave',false);
-  else                 openModal('Leave Game',"You haven't submitted your picks yet. Leaving won't save your current selections.",leaveGame,'Leave Anyway');
-}
-function leaveGame() {
-  detachListeners(); studentGameCode=null; studentKey=null; studentPicks={}; studentSubmitted=false; lastGameData=null;
-  showView('landing'); checkRejoin();
-}
+function confirmLeaveGame() { openModal('Exit Match','Return to landing desk room?',leaveGame); }
+function leaveGame() { detachListeners(); studentGameCode=null; studentKey=null; studentPicks={}; showView('landing'); checkRejoin(); }
 
-// ════════════════════════════════════════════════════════
-// LIVE BET EDIT
-// ════════════════════════════════════════════════════════
-function openEditBetModal(id, encodedPhrase, line) {
-  editingBetId = id;
-  document.getElementById('edit-bet-phrase').value = decodeURIComponent(encodedPhrase);
-  document.getElementById('edit-bet-line').value   = line;
-  document.getElementById('edit-bet-modal').classList.add('show');
-}
-function closeEditBetModal() {
-  document.getElementById('edit-bet-modal').classList.remove('show');
-  editingBetId = null;
-}
-async function saveEditBet() {
-  const phrase = document.getElementById('edit-bet-phrase').value.trim();
-  const line   = parseFloat(document.getElementById('edit-bet-line').value);
-  if(!phrase)    { toast('Enter a phrase.'); return; }
-  if(isNaN(line)){ toast('Enter a valid line.'); return; }
-  if(editingBetId && editingBetId.startsWith('tpl_')) {
-    const parts=editingBetId.split('_'), tIdx=parseInt(parts[1]), bIdx=parseInt(parts[2]);
-    const tpls=getTemplates();
-    tpls[tIdx].bets[bIdx]={phrase,line};
-    saveTemplates(tpls);
-    closeEditBetModal();
-    renderTemplateBets(tIdx);
-    toast('Template bet updated.');
-  } else if(editingBetId && adminGameCode) {
-    await db.ref(`games/${adminGameCode}/bets/${editingBetId}`).update({phrase,line});
-    closeEditBetModal();
-    toast('Bet updated — players see the change live.');
-  }
-}
-
-// ════════════════════════════════════════════════════════
-// PER-PLAYER UNLOCK
-// ════════════════════════════════════════════════════════
-async function unlockPlayer(pKey) {
-  if(!adminGameCode) return;
-  await db.ref(`games/${adminGameCode}/players/${pKey}`).update({submitted:false});
-  toast('Player unlocked — they can re-pick.');
-}
-
-// ════════════════════════════════════════════════════════
-// CSV EXPORT
-// ════════════════════════════════════════════════════════
-function exportGameCSV() {
-  if(currentHistoryIdx===null) return;
-  const g=getHistory()[currentHistoryIdx]; if(!g) return;
-  const betEntries=Object.entries(g.bets||{});
-  const playerList=Object.values(g.players||{}).sort((a,b)=>(b.score||0)-(a.score||0));
-  const rows=[];
-  const playerHeaders=playerList.map(p=>`${p.name}_pick,${p.name}_result`).join(',');
-  rows.push(`game,tag,date,phrase,line,final_count,result,${playerHeaders}`);
-  betEntries.forEach(([id,b])=>{
-    const playerCols=playerList.map(p=>{
-      const pick=(p.picks||{})[id]||'no_pick';
-      const won=pick!=='no_pick'&&b.result&&pick===b.result?'win':(pick==='no_pick'?'no_pick':'loss');
-      return `${pick},${won}`;
-    }).join(',');
-    const esc=s=>`"${String(s||'').replace(/"/g,'""')}"`;
-    rows.push(`${esc(g.name)},${esc(g.tag||'')},${formatDate(g.date)},${esc(b.phrase)},${b.line},${b.finalCount??''},${b.result||''},${playerCols}`);
-  });
-  const csv=rows.join('\n'), blob=new Blob([csv],{type:'text/csv'}), url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=`${String(g.name||'game').replace(/\s+/g,'_')}${g.tag?'_'+String(g.tag).replace(/\s+/g,'_'):''}__${new Date(g.date).toISOString().slice(0,10)}.csv`;
-  a.click(); URL.revokeObjectURL(url);
-  toast('CSV downloaded.');
-}
-
-// ════════════════════════════════════════════════════════
-// TEMPLATES
-// ════════════════════════════════════════════════════════
-function populateTemplateDropdown() {
-  const sel=document.getElementById('new-game-template'), tpls=getTemplates();
-  sel.innerHTML='<option value="">— No template —</option>';
-  tpls.forEach((t,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=t.name; sel.appendChild(o); });
-}
-function renderTemplates() {
-  const tpls=getTemplates(), el=document.getElementById('tpl-list-content');
-  document.getElementById('tpl-list-section').style.display   = 'flex';
-  document.getElementById('tpl-detail-section').style.display = 'none';
-  currentTemplateIdx=null;
-  if(tpls.length===0){ el.innerHTML='<div class="t-muted t-center">No templates yet.</div>'; return; }
-  el.innerHTML=tpls.map((t,i)=>`
-    <div class="history-item" onclick="showTemplateDetail(${i})">
-      <div class="history-info">
-        <div class="history-name">${t.name}</div>
-        <div class="history-meta">${(t.bets||[]).length} bet${(t.bets||[]).length!==1?'s':''}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-        <button class="btn btn-sm btn-red-ghost" onclick="event.stopPropagation();confirmDeleteTemplate(${i})">🗑️</button>
-        <span style="color:var(--muted);">›</span>
-      </div>
-    </div>`).join('');
-}
-function createTemplate() {
-  const name=document.getElementById('new-tpl-name').value.trim();
-  if(!name){ toast('Enter a template name.'); return; }
-  const tpls=getTemplates(); tpls.unshift({id:'t'+Date.now(),name,bets:[]});
-  saveTemplates(tpls); document.getElementById('new-tpl-name').value='';
-  populateTemplateDropdown(); renderTemplates(); toast('Template created.');
-}
-function confirmDeleteTemplate(idx) {
-  const t=getTemplates()[idx]; if(!t) return;
-  openModal('Delete Template',`Delete "${t.name}"? Cannot be undone.`,()=>{
-    const tpls=getTemplates(); tpls.splice(idx,1); saveTemplates(tpls);
-    populateTemplateDropdown(); renderTemplates(); toast('Template deleted.');
-  });
-}
-function showTemplateDetail(idx) {
-  const tpls=getTemplates(), t=tpls[idx]; if(!t) return;
-  currentTemplateIdx=idx;
-  document.getElementById('tpl-list-section').style.display   = 'none';
-  document.getElementById('tpl-detail-section').style.display = 'flex';
-  document.getElementById('tpl-detail-header').innerHTML=`<div style="font-weight:700;font-size:16px;">${t.name}</div><div class="t-muted t-sm">${(t.bets||[]).length} bet${(t.bets||[]).length!==1?'s':''}</div>`;
-  renderTemplateBets(idx);
-}
-function closeTemplateDetail() {
-  document.getElementById('tpl-detail-section').style.display='none';
-  document.getElementById('tpl-list-section').style.display='flex';
-  currentTemplateIdx=null;
-}
-function renderTemplateBets(idx) {
-  const tpls=getTemplates(), t=tpls[idx], el=document.getElementById('tpl-bets-list');
-  if(!t||(t.bets||[]).length===0){ el.innerHTML='<div class="t-muted t-center">No bets yet.</div>'; return; }
-  el.innerHTML=t.bets.map((b,bi)=>`
-    <div class="admin-bet-row">
-      <div class="admin-bet-info">
-        <div class="admin-bet-phrase">"${b.phrase}"</div>
-        <div class="admin-bet-meta">Line: ${b.line}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <button class="btn btn-sm btn-ghost" onclick="openEditTemplateBet(${idx},${bi})">✏️</button>
-        <button class="btn btn-sm btn-red-ghost" onclick="removeTemplateBet(${idx},${bi})">✕</button>
-      </div>
-    </div>`).join('');
-}
-function addTemplateBet() {
-  if(currentTemplateIdx===null) return;
-  const phrase=document.getElementById('tpl-bet-phrase').value.trim();
-  const line=parseFloat(document.getElementById('tpl-bet-line').value);
-  if(!phrase){ toast('Enter a phrase.'); return; }
-  if(isNaN(line)){ toast('Enter a line.'); return; }
-  const tpls=getTemplates();
-  tpls[currentTemplateIdx].bets=tpls[currentTemplateIdx].bets||[];
-  tpls[currentTemplateIdx].bets.push({phrase,line});
-  saveTemplates(tpls);
-  document.getElementById('tpl-bet-phrase').value='';
-  document.getElementById('tpl-bet-line').value='';
-  const t=tpls[currentTemplateIdx];
-  document.getElementById('tpl-detail-header').innerHTML=`<div style="font-weight:700;font-size:16px;">${t.name}</div><div class="t-muted t-sm">${t.bets.length} bet${t.bets.length!==1?'s':''}</div>`;
-  renderTemplateBets(currentTemplateIdx);
-  populateTemplateDropdown();
-}
-function removeTemplateBet(tIdx,bIdx) {
-  const tpls=getTemplates(); tpls[tIdx].bets.splice(bIdx,1); saveTemplates(tpls);
-  const t=tpls[tIdx];
-  document.getElementById('tpl-detail-header').innerHTML=`<div style="font-weight:700;font-size:16px;">${t.name}</div><div class="t-muted t-sm">${t.bets.length} bet${t.bets.length!==1?'s':''}</div>`;
-  renderTemplateBets(tIdx); populateTemplateDropdown();
-}
-function openEditTemplateBet(tIdx,bIdx) {
-  const b=getTemplates()[tIdx].bets[bIdx];
-  editingBetId=`tpl_${tIdx}_${bIdx}`;
-  document.getElementById('edit-bet-phrase').value=b.phrase;
-  document.getElementById('edit-bet-line').value=b.line;
-  document.getElementById('edit-bet-modal').classList.add('show');
-}
-
-// ════════════════════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════════════════════
-
-// ════════════════════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════════════════════
-document.getElementById('join-code').addEventListener('input',function(){ this.value=this.value.toUpperCase(); });
+document.getElementById('join-code').addEventListener('input',function(){this.value=this.value.toUpperCase();});
 checkRejoin();
 </script>
 </body>
