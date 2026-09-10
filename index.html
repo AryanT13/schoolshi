@@ -94,6 +94,8 @@ input:focus{border-color:var(--accent)}
 .modal-body{color:var(--muted);font-size:14px;line-height:1.5}
 .modal-btns{display:flex;gap:10px}
 .modal-btns .btn{flex:1}
+.preset-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.preset-item:last-child{border-bottom:none}
 .t-muted{color:var(--muted);font-size:13px}
 .t-center{text-align:center}
 .t-mono{font-family:'DM Mono',monospace}
@@ -162,7 +164,7 @@ input:focus{border-color:var(--accent)}
   </div>
 </div>
 
-<!-- HOST DESK VIEW (NO ADMIN LOGIN) -->
+<!-- HOST DESK VIEW -->
 <div id="view-admin-dashboard" class="view">
   <div style="display:flex;justify-content:space-between;align-items:center;">
     <div>
@@ -196,7 +198,6 @@ input:focus{border-color:var(--accent)}
           <input type="text" id="new-game-tag" placeholder="e.g. Period 3 · AP Euro">
         </div>
         
-        <!-- MATCH MODE TOGGLE -->
         <div class="field">
           <label>Match Mode</label>
           <div class="mode-toggle-group">
@@ -235,6 +236,19 @@ input:focus{border-color:var(--accent)}
         </div>
         <button class="btn btn-ghost btn-sm" style="align-self:flex-start;" onclick="goBackToCreate()">← Exit to Host Lobby</button>
       </div>
+
+      <!-- LOCAL CLASS PRESETS TOOL (SAVED TO DEVICE ONLY) -->
+      <div id="admin-presets-section" style="display:none;">
+        <div class="slabel" style="margin-bottom:8px;">Local Class Presets (Your Device Only)</div>
+        <div class="card" style="gap:10px;">
+          <div class="row">
+            <input type="text" id="preset-name" placeholder="Preset name (e.g. AP Euro Quiz)">
+            <button class="btn btn-ghost btn-sm" onclick="saveCurrentLinesAsPreset()" style="white-space:nowrap;">💾 Save Current Lines</button>
+          </div>
+          <div id="preset-list-container" style="display:flex;flex-direction:column;gap:4px;"></div>
+        </div>
+      </div>
+
       <div id="admin-add-bet" style="display:none;">
         <div class="slabel" style="margin-bottom:8px;">Add Custom Metric Line</div>
         <div class="card">
@@ -363,9 +377,6 @@ input:focus{border-color:var(--accent)}
 <div class="toast" id="toast"></div>
 
 <script>
-// ════════════════════════════════════════════════════════
-// FIREBASE CONFIGURATION
-// ════════════════════════════════════════════════════════
 const firebaseConfig = {
   apiKey: "AIzaSyAXYOM3OXb33ILzQ80-X_zQLjYFsc3tUMA",
   authDomain: "schoolshi-analytics.firebaseapp.com",
@@ -411,6 +422,10 @@ const saveHistory = h => LS.set(`sh_history_global`, h);
 const saveSeason = s => LS.set(`sh_season_global`, s);
 const hostCodeKey = () => `sh_host_code_global`;
 
+// LOCAL DEVICE-ONLY PRESETS STORAGE
+const getLocalPresets = () => LS.get('sh_class_presets') || {};
+const saveLocalPresets = p => LS.set('sh_class_presets', p);
+
 function sanitizeKey(s){ return s.trim().toLowerCase().replace(/[.#$\[\]/\s]/g,'_').substring(0,40); }
 function genCode(){ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; return Array.from({length:4},()=>c[Math.floor(Math.random()*c.length)]).join(''); }
 function showView(id) {
@@ -453,14 +468,13 @@ function openModal(title,body,action) {
 function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); modalAction=null; }
 function runModal() { const a=modalAction; closeModal(); if(a) a(); }
 
-// HOST MODE SELECTOR
+// HOST CONTROLS
 function selectMatchMode(mode) {
   selectedMode = mode;
   document.getElementById('mode-quick-btn').classList.toggle('selected', mode==='quick');
   document.getElementById('mode-long-btn').classList.toggle('selected', mode==='long');
 }
 
-// HOST DESK CONTROLS (NO LOGIN)
 function openHostDesk() {
   clearErr('admin-engine-err');
   showView('admin-dashboard');
@@ -507,6 +521,7 @@ function returnToGame() {
   document.getElementById('admin-create-section').style.display = 'none';
   document.getElementById('admin-active-section').style.display = 'flex';
   document.getElementById('admin-game-code').textContent = code;
+  renderPresetList();
   attachHostListener(code);
 }
 
@@ -543,6 +558,7 @@ async function createGame() {
     document.getElementById('admin-create-section').style.display = 'none';
     document.getElementById('admin-active-section').style.display = 'flex';
     document.getElementById('admin-game-code').textContent = code;
+    renderPresetList();
     attachHostListener(code);
   } catch(e) {
     err('admin-engine-err', "Write Interrupted: Ensure Realtime Database permissions permit read/write.");
@@ -586,14 +602,90 @@ function renderAdmin(data) {
     }).join('');
   }
 
-  document.getElementById('admin-add-bet').style.display = status==='open' ? 'block' : 'none';
-  document.getElementById('btn-lock').style.display = status==='open' ? 'block' : 'none';
+  const isOpen = status==='open';
+  document.getElementById('admin-presets-section').style.display = isOpen ? 'block' : 'none';
+  document.getElementById('admin-add-bet').style.display = isOpen ? 'block' : 'none';
+  document.getElementById('btn-lock').style.display = isOpen ? 'block' : 'none';
   document.getElementById('btn-unlock').style.display = status==='locked' ? 'block' : 'none';
   document.getElementById('admin-end-section').style.display = status==='locked' ? 'block' : 'none';
   document.getElementById('admin-leaderboard-section').style.display = status==='ended' ? 'block' : 'none';
 
   if(status==='locked') renderCountInputs(bets);
   if(status==='ended') renderAdminLeaderboard(players);
+}
+
+// LOCAL PRESET FUNCTIONS (STORED ONLY ON THIS COMPUTER/DEVICE)
+function renderPresetList() {
+  const container = document.getElementById('preset-list-container');
+  const presets = getLocalPresets();
+  const names = Object.keys(presets);
+  if(names.length === 0){
+    container.innerHTML = '<div class="t-muted" style="font-size:12px;">No local presets saved yet.</div>';
+    return;
+  }
+  container.innerHTML = names.map(name => {
+    const count = presets[name].length;
+    return `
+      <div class="preset-item">
+        <div>
+          <div style="font-weight:700;font-size:13px;">${name}</div>
+          <div class="t-muted" style="font-size:11px;">${count} line${count===1?'':'s'}</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost btn-sm" onclick="loadPresetLines('${encodeURIComponent(name)}')">📥 Load</button>
+          <button class="btn btn-red-ghost btn-sm" onclick="deleteLocalPreset('${encodeURIComponent(name)}')">✕</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function saveCurrentLinesAsPreset() {
+  const name = document.getElementById('preset-name').value.trim();
+  if(!name){ toast('Enter a name for the local preset.'); return; }
+  const betsSnap = await db.ref(`games/${hostGameCode}/bets`).once('value');
+  const bets = betsSnap.val();
+  if(!bets || Object.keys(bets).length === 0){
+    toast('Add at least one line to the game first.');
+    return;
+  }
+  const lines = Object.values(bets).map(b => ({ phrase: b.phrase, line: b.line }));
+  const presets = getLocalPresets();
+  presets[name] = lines;
+  saveLocalPresets(presets);
+  document.getElementById('preset-name').value = '';
+  renderPresetList();
+  toast(`Preset "${name}" saved to this device.`);
+}
+
+async function loadPresetLines(encodedName) {
+  const name = decodeURIComponent(encodedName);
+  const presets = getLocalPresets();
+  const lines = presets[name];
+  if(!lines || lines.length === 0){ toast('Preset is empty.'); return; }
+  
+  // Bulk upload to current active game
+  const updates = {};
+  const baseTime = Date.now();
+  lines.forEach((l, index) => {
+    updates[`bets/b${baseTime}_${index}`] = {
+      phrase: l.phrase,
+      line: l.line,
+      finalCount: null,
+      result: null
+    };
+  });
+  await db.ref(`games/${hostGameCode}`).update(updates);
+  toast(`Loaded ${lines.length} lines from "${name}".`);
+}
+
+function deleteLocalPreset(encodedName) {
+  const name = decodeURIComponent(encodedName);
+  const presets = getLocalPresets();
+  delete presets[name];
+  saveLocalPresets(presets);
+  renderPresetList();
+  toast(`Deleted preset "${name}".`);
 }
 
 async function addBet() {
@@ -677,7 +769,6 @@ async function endGame() {
     updates[`players/${pKey}/score`]=score;
     historicalPlayers[pKey]={...p,score};
     
-    // Only accumulate points if in Long Match mode
     if(isLongMatch && seasonUpdate) {
       seasonUpdate[p.name] = (seasonUpdate[p.name]||0) + score;
     }
