@@ -38,6 +38,9 @@ input:focus{border-color:var(--accent)}
 .tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:4px}
 .tab-btn{flex:1;padding:9px 8px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:all .15s}
 .tab-btn.active{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.mode-toggle-group{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mode-btn{padding:10px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s}
+.mode-btn.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--accent)}
 .back-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;padding:0;text-align:left;letter-spacing:.3px}
 .back-btn:hover{color:var(--text)}
 .bet-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:12px}
@@ -57,6 +60,9 @@ input:focus{border-color:var(--accent)}
 .s-open{background:var(--accent-dim);color:var(--accent)}
 .s-locked{background:var(--gold-dim);color:var(--gold)}
 .s-ended{background:var(--red-dim);color:var(--red)}
+.mode-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:1px}
+.mb-quick{background:var(--gold-dim);color:var(--gold);border:1px solid var(--gold)}
+.mb-long{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent)}
 .slabel{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)}
 .admin-bet-row{display:flex;align-items:center;gap:12px;padding:12px;border-radius:8px;background:var(--bg);border:1px solid var(--border)}
 .admin-bet-info{flex:1;min-width:0}
@@ -75,11 +81,12 @@ input:focus{border-color:var(--accent)}
 .lb-rank.gold{color:var(--gold)}
 .lb-name{flex:1;font-weight:500}
 .lb-score{font-family:'DM Mono',monospace;font-size:22px;color:var(--accent)}
-.history-item{display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;background:var(--bg);border:1px solid var(--border);cursor:pointer;transition:border-color .15s}
-.history-item:hover{border-color:var(--accent)}
+.history-item{display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;background:var(--bg);border:1px solid var(--border)}
 .history-info{flex:1}
 .history-name{font-weight:700;font-size:14px}
 .history-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.bet-result-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.bet-result-row:last-child{border-bottom:none}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:center;justify-content:center}
 .modal-overlay.show{display:flex}
 .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;max-width:340px;width:90%;display:flex;flex-direction:column;gap:16px}
@@ -129,6 +136,7 @@ input:focus{border-color:var(--accent)}
   </div>
 </div>
 
+<!-- LANDING VIEW -->
 <div id="view-landing" class="view active">
   <div style="padding-top:36px;margin-bottom:4px;">
     <div class="logo">SchoolShi</div>
@@ -136,8 +144,8 @@ input:focus{border-color:var(--accent)}
     <div class="logo-sub" style="margin-top:1px;letter-spacing:1px;">by Aryan Thaker</div>
   </div>
   <div class="card">
-    <button class="btn btn-primary" onclick="goStudentJoin()">▶ &nbsp;Join active room</button>
-    <button class="btn btn-ghost btn-full" onclick="showView('admin-login')">Admin Dashboard</button>
+    <button class="btn btn-primary" onclick="goStudentJoin()">▶ &nbsp;Join Room</button>
+    <button class="btn btn-ghost btn-full" onclick="openHostDesk()">⚡ &nbsp;Host / Create Match</button>
   </div>
   <div id="rejoin-card" style="display:none;">
     <div class="slabel" style="margin-bottom:8px;">Last Active Room</div>
@@ -154,31 +162,18 @@ input:focus{border-color:var(--accent)}
   </div>
 </div>
 
-<div id="view-admin-login" class="view">
-  <button class="back-btn" onclick="showView('landing')">← Cancel</button>
-  <div class="logo" style="font-size:38px;text-align:left;letter-spacing:4px;">Admin Portal</div>
-  <div class="card">
-    <div class="field">
-      <label>Classroom Key Phrase</label>
-      <input type="password" id="admin-pw" placeholder="Enter custom room manager password" onkeydown="if(event.key==='Enter') adminLogin()">
-    </div>
-    <div class="t-muted" style="font-size:11px; margin-top:-6px;">Unique strings safely segregate separate classes. Keep this code secret.</div>
-    <div id="admin-login-err" class="t-error" style="display:none;"></div>
-    <button class="btn btn-primary" onclick="adminLogin()">Enter Dashboard</button>
-  </div>
-</div>
-
+<!-- HOST DESK VIEW (NO ADMIN LOGIN) -->
 <div id="view-admin-dashboard" class="view">
   <div style="display:flex;justify-content:space-between;align-items:center;">
     <div>
       <div class="logo" style="font-size:34px;letter-spacing:4px;">SchoolShi</div>
     </div>
-    <button class="back-btn" onclick="adminLogout()">Sign Out</button>
+    <button class="back-btn" onclick="exitHostDesk()">← Back to Menu</button>
   </div>
   <div class="tabs">
     <button class="tab-btn active" id="tab-game" onclick="switchTab('game')">🎮 Engine</button>
     <button class="tab-btn" id="tab-history" onclick="switchTab('history')">📋 Logs</button>
-    <button class="tab-btn" id="tab-season" onclick="switchTab('season')">🏆 Ladder</button>
+    <button class="tab-btn" id="tab-season" onclick="switchTab('season')">🏆 Season Ladder</button>
   </div>
 
   <div id="tab-game-content" style="display:flex;flex-direction:column;gap:14px;">
@@ -190,7 +185,7 @@ input:focus{border-color:var(--accent)}
           <button class="btn btn-ghost btn-full" onclick="returnToGame()">Reopen Control Desk →</button>
         </div>
       </div>
-      <div class="slabel" style="margin-bottom:8px;">Initialize Match instance</div>
+      <div class="slabel" style="margin-bottom:8px;">Initialize Match Instance</div>
       <div class="card">
         <div class="field">
           <label>Instance Topic Name</label>
@@ -200,6 +195,22 @@ input:focus{border-color:var(--accent)}
           <label>Section Tag Label (Optional)</label>
           <input type="text" id="new-game-tag" placeholder="e.g. Period 3 · AP Euro">
         </div>
+        
+        <!-- MATCH MODE TOGGLE -->
+        <div class="field">
+          <label>Match Mode</label>
+          <div class="mode-toggle-group">
+            <button type="button" id="mode-quick-btn" class="mode-btn selected" onclick="selectMatchMode('quick')">
+              ⚡ Quick Match
+              <div style="font-size:10px;font-weight:400;color:var(--muted);margin-top:2px;">Single session · No season tracking</div>
+            </button>
+            <button type="button" id="mode-long-btn" class="mode-btn" onclick="selectMatchMode('long')">
+              🏆 Long Match
+              <div style="font-size:10px;font-weight:400;color:var(--muted);margin-top:2px;">Tracks multi-day master ladder</div>
+            </button>
+          </div>
+        </div>
+
         <div id="admin-engine-err" class="t-error" style="display:none; margin-bottom: 5px;"></div>
         <button class="btn btn-primary" onclick="createGame()">Launch Live Match</button>
       </div>
@@ -210,7 +221,10 @@ input:focus{border-color:var(--accent)}
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
           <div style="flex:1;">
             <div id="admin-game-name" style="font-weight:700;font-size:16px;"></div>
-            <div id="admin-status-badge" style="margin-top:6px;"></div>
+            <div style="display:flex;gap:6px;align-items:center;margin-top:6px;">
+              <span id="admin-status-badge"></span>
+              <span id="admin-mode-badge"></span>
+            </div>
             <div id="admin-submit-count" class="t-muted" style="margin-top:4px; font-size:12px;"></div>
           </div>
           <div style="text-align:right;flex-shrink:0;">
@@ -219,7 +233,7 @@ input:focus{border-color:var(--accent)}
             <button class="btn btn-ghost btn-sm" style="margin-top:6px;" onclick="copyCode()">Copy Code</button>
           </div>
         </div>
-        <button class="btn btn-ghost btn-sm" style="align-self:flex-start;" onclick="goBackToCreate()">← Exit to Lobby</button>
+        <button class="btn btn-ghost btn-sm" style="align-self:flex-start;" onclick="goBackToCreate()">← Exit to Host Lobby</button>
       </div>
       <div id="admin-add-bet" style="display:none;">
         <div class="slabel" style="margin-bottom:8px;">Add Custom Metric Line</div>
@@ -270,10 +284,11 @@ input:focus{border-color:var(--accent)}
   </div>
   <div id="tab-season-content" style="display:none;flex-direction:column;gap:14px;">
     <div class="card"><div id="season-lb-content"></div></div>
-    <button class="btn btn-red-ghost btn-sm" onclick="confirmResetSeason()">Purge Master Leaderboard</button>
+    <button class="btn btn-red-ghost btn-sm" onclick="confirmResetSeason()">Purge Master Season Leaderboard</button>
   </div>
 </div>
 
+<!-- STUDENT / PLAYER JOIN VIEW -->
 <div id="view-student-join" class="view">
   <button class="back-btn" onclick="showView('landing')">← Exit</button>
   <div class="logo" style="font-size:38px;text-align:left;letter-spacing:4px;">Enter Room</div>
@@ -291,11 +306,15 @@ input:focus{border-color:var(--accent)}
   </div>
 </div>
 
+<!-- STUDENT / PLAYER GAME VIEW -->
 <div id="view-student-game" class="view">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
     <div>
       <div id="sg-name" style="font-family:'Bebas Neue';font-size:22px;color:var(--accent);letter-spacing:1px;"></div>
-      <div id="sg-status" style="margin-top:4px;"></div>
+      <div style="display:flex;gap:6px;align-items:center;margin-top:4px;">
+        <span id="sg-status"></span>
+        <span id="sg-mode-badge"></span>
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;">
       <div style="text-align:right;">
@@ -312,8 +331,8 @@ input:focus{border-color:var(--accent)}
   <div id="sg-submitted-msg" style="display:none;">
     <div class="card" style="text-align:center;gap:6px;">
       <div style="font-size:28px;" class="waiting-dot">⏳</div>
-      <div style="font-weight:700;">Predictions Saved securely</div>
-      <div class="t-muted" style="font-size:12px;">Awaiting round conclusion from room manager...</div>
+      <div style="font-weight:700;">Predictions Saved Securely</div>
+      <div class="t-muted" style="font-size:12px;">Awaiting round conclusion from room host...</div>
     </div>
   </div>
   <div id="sg-locked-msg" style="display:none;">
@@ -334,7 +353,7 @@ input:focus{border-color:var(--accent)}
       <div class="card"><div id="sg-bet-breakdown"></div></div>
     </div>
     <div>
-      <div class="slabel" style="margin-bottom:8px;">Classroom Standing</div>
+      <div class="slabel" style="margin-bottom:8px;">Room Standing</div>
       <div class="card"><div id="sg-leaderboard-content"></div></div>
     </div>
     <button class="btn btn-ghost btn-full" onclick="leaveGame()">← Exit to Menu</button>
@@ -345,7 +364,7 @@ input:focus{border-color:var(--accent)}
 
 <script>
 // ════════════════════════════════════════════════════════
-// 1. CONFIGURATION STAGE (PASTE NEW LINK DETAILS HERE)
+// FIREBASE CONFIGURATION
 // ════════════════════════════════════════════════════════
 const firebaseConfig = {
   apiKey: "AIzaSyAXYOM3OXb33ILzQ80-X_zQLjYFsc3tUMA",
@@ -357,13 +376,10 @@ const firebaseConfig = {
   appId: "1:1022944512262:web:6a1fc650edffd7d9c6b687"
 };
 
-// ════════════════════════════════════════════════════════
-// RUNTIME STATE CONSTRUCTORS
-// ════════════════════════════════════════════════════════
 let db;
 let initialized = false;
-let currentAdminId = null;
-let adminGameCode = null;
+let hostGameCode = null;
+let selectedMode = 'quick'; // 'quick' | 'long'
 let studentGameCode = null;
 let studentKey = null;
 let studentPicks = {};
@@ -373,7 +389,6 @@ let listeners = [];
 let modalAction = null;
 let editingBetId = null;
 
-// Initialize Firebase with fallback checks
 try {
   if (firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("PASTE_YOUR")) {
     firebase.initializeApp(firebaseConfig);
@@ -390,11 +405,11 @@ const LS = {
   del:(k)=>{try{localStorage.removeItem(k)}catch{}}
 };
 
-const getHistory = () => LS.get(`sh_history_${currentAdminId}`) || [];
-const getSeason = () => LS.get(`sh_season_${currentAdminId}`) || {};
-const saveHistory = h => LS.set(`sh_history_${currentAdminId}`, h);
-const saveSeason = s => LS.set(`sh_season_${currentAdminId}`, s);
-const adminCodeKey = () => `sh_admin_code_${currentAdminId}`;
+const getHistory = () => LS.get(`sh_history_global`) || [];
+const getSeason = () => LS.get(`sh_season_global`) || {};
+const saveHistory = h => LS.set(`sh_history_global`, h);
+const saveSeason = s => LS.set(`sh_season_global`, s);
+const hostCodeKey = () => `sh_host_code_global`;
 
 function sanitizeKey(s){ return s.trim().toLowerCase().replace(/[.#$\[\]/\s]/g,'_').substring(0,40); }
 function genCode(){ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; return Array.from({length:4},()=>c[Math.floor(Math.random()*c.length)]).join(''); }
@@ -413,19 +428,22 @@ function statusPill(s) {
   const m={open:['s-open','Open'],locked:['s-locked','Locked'],ended:['s-ended','Ended']}; 
   const[cls,l]=m[s]||['s-open',s]; return `<span class="status-pill ${cls}">${l}</span>`; 
 }
+function modeBadge(m) {
+  if(m==='long') return `<span class="mode-badge mb-long">Long Match</span>`;
+  return `<span class="mode-badge mb-quick">Quick Match</span>`;
+}
 function detachListeners(){ listeners.forEach(({ref,handler})=>ref.off('value',handler)); listeners=[]; }
 function subscribe(ref,handler){ ref.on('value',handler); listeners.push({ref,handler}); }
 
-// DIAGNOSTIC CORE ASSISTANCE
 function verifyDbConnection(errElementId) {
   if (!initialized) {
-    err(errElementId, "Configuration Fault: Complete Step 3 to register your custom database parameters inside the code config block.");
+    err(errElementId, "Configuration Fault: Verify Firebase parameters in script setup.");
     return false;
   }
   return true;
 }
 
-// MODAL FLOW CONTROLLERS
+// MODALS
 function openModal(title,body,action) {
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-body').textContent = body;
@@ -435,19 +453,27 @@ function openModal(title,body,action) {
 function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); modalAction=null; }
 function runModal() { const a=modalAction; closeModal(); if(a) a(); }
 
-// ENTRY MANAGEMENT ACTIONS
-function adminLogin() {
-  clearErr('admin-login-err');
-  if (!verifyDbConnection('admin-login-err')) return;
-  const pw = document.getElementById('admin-pw').value.trim();
-  if(!pw){ err('admin-login-err','Password parameter cannot remain empty.'); return; }
-  currentAdminId = sanitizeKey(pw);
-  document.getElementById('admin-pw').value = '';
+// HOST MODE SELECTOR
+function selectMatchMode(mode) {
+  selectedMode = mode;
+  document.getElementById('mode-quick-btn').classList.toggle('selected', mode==='quick');
+  document.getElementById('mode-long-btn').classList.toggle('selected', mode==='long');
+}
+
+// HOST DESK CONTROLS (NO LOGIN)
+function openHostDesk() {
+  clearErr('admin-engine-err');
   showView('admin-dashboard');
   switchTab('game');
   checkReturnToGame();
 }
-function adminLogout() { detachListeners(); adminGameCode=null; currentAdminId=null; showView('landing'); }
+
+function exitHostDesk() {
+  detachListeners();
+  hostGameCode = null;
+  showView('landing');
+  checkRejoin();
+}
 
 function switchTab(tab) {
   ['game','history','season'].forEach(t=>{
@@ -458,15 +484,15 @@ function switchTab(tab) {
   if(tab==='season') renderSeasonLB();
 }
 
-// APPLICATION STATE CHECKS
 async function checkReturnToGame() {
-  const saved = LS.get(adminCodeKey());
+  const saved = LS.get(hostCodeKey());
   if(!saved){ document.getElementById('return-game-card').style.display='none'; return; }
   try {
     db.ref(`games/${saved}/meta`).once('value').then(snap => {
-      if(!snap.exists() || snap.val().status==='ended' || snap.val().adminId!==currentAdminId){
-        LS.del(adminCodeKey());
-        document.getElementById('return-game-card').style.display='none'; return;
+      if(!snap.exists() || snap.val().status==='ended'){
+        LS.del(hostCodeKey());
+        document.getElementById('return-game-card').style.display='none'; 
+        return;
       }
       document.getElementById('return-game-name').textContent = snap.val().name;
       document.getElementById('return-game-card').style.display = 'block';
@@ -475,17 +501,18 @@ async function checkReturnToGame() {
 }
 
 function returnToGame() {
-  const code = LS.get(adminCodeKey());
+  const code = LS.get(hostCodeKey());
   if(!code) return;
-  adminGameCode = code;
+  hostGameCode = code;
   document.getElementById('admin-create-section').style.display = 'none';
   document.getElementById('admin-active-section').style.display = 'flex';
   document.getElementById('admin-game-code').textContent = code;
-  attachAdminListener(code);
+  attachHostListener(code);
 }
 
 function goBackToCreate() {
-  detachListeners(); adminGameCode=null;
+  detachListeners(); 
+  hostGameCode = null;
   document.getElementById('admin-active-section').style.display = 'none';
   document.getElementById('admin-create-section').style.display = 'block';
   checkReturnToGame();
@@ -496,27 +523,33 @@ async function createGame() {
   if(!verifyDbConnection('admin-engine-err')) return;
   const name = document.getElementById('new-game-name').value.trim();
   const tag = document.getElementById('new-game-tag').value.trim();
-  if(!name){ toast('Please define a match name instance.'); return; }
+  if(!name){ toast('Please define a match instance name.'); return; }
   
   let code = genCode();
   try {
     await db.ref('games/'+code).set({
-      meta:{name, tag:tag||'', status:'open', createdAt:Date.now(), adminId:currentAdminId}
+      meta:{
+        name,
+        tag:tag||'',
+        mode:selectedMode,
+        status:'open',
+        createdAt:Date.now()
+      }
     });
-    LS.set(adminCodeKey(), code);
-    adminGameCode = code;
+    LS.set(hostCodeKey(), code);
+    hostGameCode = code;
     document.getElementById('new-game-name').value = '';
     document.getElementById('new-game-tag').value = '';
     document.getElementById('admin-create-section').style.display = 'none';
     document.getElementById('admin-active-section').style.display = 'flex';
     document.getElementById('admin-game-code').textContent = code;
-    attachAdminListener(code);
+    attachHostListener(code);
   } catch(e) {
-    err('admin-engine-err', "Write Interrupted: Ensure Realtime Database rules match Step 4 completely.");
+    err('admin-engine-err', "Write Interrupted: Ensure Realtime Database permissions permit read/write.");
   }
 }
 
-function attachAdminListener(code) {
+function attachHostListener(code) {
   detachListeners();
   subscribe(db.ref('games/'+code), snap=>{ if(snap.exists()) renderAdmin(snap.val()); });
 }
@@ -525,6 +558,8 @@ function renderAdmin(data) {
   const meta=data.meta||{}, bets=data.bets||{}, players=data.players||{}, status=meta.status||'open';
   document.getElementById('admin-game-name').textContent = meta.name||'';
   document.getElementById('admin-status-badge').innerHTML = statusPill(status);
+  document.getElementById('admin-mode-badge').innerHTML = modeBadge(meta.mode);
+  
   const pList=Object.values(players), subCount=pList.filter(p=>p.submitted).length;
   document.getElementById('admin-submit-count').textContent = pList.length ? `${subCount} / ${pList.length} submissions in` : 'No players connected yet.';
 
@@ -541,7 +576,7 @@ function renderAdmin(data) {
 
   document.getElementById('admin-player-count').textContent = pList.length;
   const playersEl = document.getElementById('admin-player-list');
-  if(pList.length===0){ playersEl.innerHTML='<div class="t-muted t-center">Awaiting entry connections...</div>'; }
+  if(pList.length===0){ playersEl.innerHTML='<div class="t-muted t-center">Awaiting player connections...</div>'; }
   else {
     playersEl.innerHTML=pList.map(p=>{
       const scoreHtml=p.score!=null ? `<span class="t-mono t-accent">${p.score}pts</span>` : '';
@@ -564,8 +599,8 @@ function renderAdmin(data) {
 async function addBet() {
   const phrase=document.getElementById('bet-phrase').value.trim();
   const line=parseFloat(document.getElementById('bet-line').value);
-  if(!phrase || isNaN(line)){ toast('Please construct formal statement and baseline value.'); return; }
-  await db.ref(`games/${adminGameCode}/bets/b${Date.now()}`).set({phrase,line,finalCount:null,result:null});
+  if(!phrase || isNaN(line)){ toast('Please define statement and baseline value.'); return; }
+  await db.ref(`games/${hostGameCode}/bets/b${Date.now()}`).set({phrase,line,finalCount:null,result:null});
   document.getElementById('bet-phrase').value='';
   document.getElementById('bet-line').value='';
   toast('Metric line initialized.');
@@ -581,21 +616,21 @@ function closeEditBetModal() { document.getElementById('edit-bet-modal').classLi
 async function saveEditBet() {
   const phrase = document.getElementById('edit-bet-phrase').value.trim();
   const line = parseFloat(document.getElementById('edit-bet-line').value);
-  if(editingBetId && adminGameCode && phrase && !isNaN(line)) {
-    await db.ref(`games/${adminGameCode}/bets/${editingBetId}`).update({phrase,line});
+  if(editingBetId && hostGameCode && phrase && !isNaN(line)) {
+    await db.ref(`games/${hostGameCode}/bets/${editingBetId}`).update({phrase,line});
     closeEditBetModal();
     toast('Data adjustment distributed.');
   }
 }
 
 async function unlockPlayer(pKey) {
-  await db.ref(`games/${adminGameCode}/players/${pKey}`).update({submitted:false});
-  toast('Profile submission unlocked.');
+  await db.ref(`games/${hostGameCode}/players/${pKey}`).update({submitted:false});
+  toast('Player submission unlocked.');
 }
 
 function confirmLock() { openModal('Suspend Choices','Lock submission parameters for structural review?',lockGame); }
-async function lockGame() { await db.ref(`games/${adminGameCode}/meta/status`).set('locked'); }
-async function unlockGame() { await db.ref(`games/${adminGameCode}/meta/status`).set('open'); }
+async function lockGame() { await db.ref(`games/${hostGameCode}/meta/status`).set('locked'); }
+async function unlockGame() { await db.ref(`games/${hostGameCode}/meta/status`).set('open'); }
 
 function renderCountInputs(bets) {
   const el=document.getElementById('admin-counts-list'), entries=Object.entries(bets);
@@ -606,11 +641,12 @@ function renderCountInputs(bets) {
     </div>`).join('');
 }
 
-function confirmEndGame() { openModal('Resolve Room Results','Evaluate metric entries to distribute final score sheets?',endGame); }
+function confirmEndGame() { openModal('Resolve Match','Evaluate counts and compute player scores?',endGame); }
 async function endGame() {
-  const betsSnap = await db.ref(`games/${adminGameCode}/bets`).once('value');
-  const metaSnap = await db.ref(`games/${adminGameCode}/meta`).once('value');
+  const betsSnap = await db.ref(`games/${hostGameCode}/bets`).once('value');
+  const metaSnap = await db.ref(`games/${hostGameCode}/meta`).once('value');
   const bets = betsSnap.val()||{}, betEntries = Object.entries(bets);
+  const meta = metaSnap.val()||{};
   
   const results={};
   for(const [id,b] of betEntries){
@@ -619,7 +655,7 @@ async function endGame() {
     results[id]={val, res: val>b.line?'higher':'lower'};
   }
 
-  const playersSnap = await db.ref(`games/${adminGameCode}/players`).once('value');
+  const playersSnap = await db.ref(`games/${hostGameCode}/players`).once('value');
   const players = playersSnap.val()||{}, updates = {'meta/status':'ended'};
 
   for(const [id,{val,res}] of Object.entries(results)){
@@ -628,7 +664,8 @@ async function endGame() {
   }
 
   const historicalPlayers={};
-  const seasonUpdate = getSeason();
+  const isLongMatch = meta.mode === 'long';
+  const seasonUpdate = isLongMatch ? getSeason() : null;
 
   for(const [pKey,p] of Object.entries(players)){
     let score=0;
@@ -639,19 +676,25 @@ async function endGame() {
     }
     updates[`players/${pKey}/score`]=score;
     historicalPlayers[pKey]={...p,score};
-    seasonUpdate[p.name] = (seasonUpdate[p.name]||0) + score;
+    
+    // Only accumulate points if in Long Match mode
+    if(isLongMatch && seasonUpdate) {
+      seasonUpdate[p.name] = (seasonUpdate[p.name]||0) + score;
+    }
   }
 
-  await db.ref(`games/${adminGameCode}`).update(updates);
-  saveSeason(seasonUpdate);
+  await db.ref(`games/${hostGameCode}`).update(updates);
+  
+  if(isLongMatch && seasonUpdate){
+    saveSeason(seasonUpdate);
+    const historyObj = {code:hostGameCode, name:meta.name, date:Date.now(), players:historicalPlayers};
+    const currentHist = getHistory();
+    currentHist.unshift(historyObj);
+    saveHistory(currentHist);
+  }
 
-  const historyObj = {code:adminGameCode, name:metaSnap.val().name, date:Date.now(), players:historicalPlayers};
-  const currentHist = getHistory();
-  currentHist.unshift(historyObj);
-  saveHistory(currentHist);
-
-  LS.del(adminCodeKey());
-  toast('Instance locked and tabulated.');
+  LS.del(hostCodeKey());
+  toast(isLongMatch ? 'Match resolved and logged to ladder.' : 'Quick match finished (scores kept in room only).');
 }
 
 function renderAdminLeaderboard(players) {
@@ -659,21 +702,20 @@ function renderAdminLeaderboard(players) {
   const sorted=Object.values(players).sort((a,b)=>(b.score||0)-(a.score||0));
   el.innerHTML=sorted.map((p,i)=>`<div class="lb-row"><div class="lb-rank">${i+1}</div><div class="lb-name">${p.name}</div><div class="lb-score">${p.score||0}pts</div></div>`).join('');
 }
-function copyCode() { navigator.clipboard.writeText(adminGameCode).then(()=>toast('Room key copied.')); }
+function copyCode() { navigator.clipboard.writeText(hostGameCode).then(()=>toast('Room key copied.')); }
 
-// LOG MANAGEMENT METHODS
 function renderHistoryList() {
   const h=getHistory(), el=document.getElementById('history-list-content');
-  if(h.length===0){ el.innerHTML='<div class="t-muted t-center">Historical database empty.</div>'; }
+  if(h.length===0){ el.innerHTML='<div class="t-muted t-center">No completed Long Matches in log history.</div>'; }
   else {
     el.innerHTML=h.map(g=>`<div class="history-item"><div class="history-info"><div class="history-name">${g.name}</div><div class="history-meta">${Object.keys(g.players||{}).length} Participants engaged</div></div></div>`).join('');
   }
 }
 function renderSeasonLB() {
   const s=getSeason(), entries=Object.entries(s).sort((a,b)=>b[1]-a[1]), el=document.getElementById('season-lb-content');
-  if(entries.length===0){ el.innerHTML='<div class="t-muted t-center">No structural historical totals recorded.</div>'; }
+  if(entries.length===0){ el.innerHTML='<div class="t-muted t-center">No multi-day Long Match standings recorded yet.</div>'; }
   else {
-    el.innerHTML=entries.map(([n,s],i)=>`<div class="lb-row"><div class="lb-rank">${i+1}</div><div class="lb-name">${n}</div><div class="lb-score">${s}pts</div></div>`).join('');
+    el.innerHTML=entries.map(([n,score],i)=>`<div class="lb-row"><div class="lb-rank">${i+1}</div><div class="lb-name">${n}</div><div class="lb-score">${score}pts</div></div>`).join('');
   }
 }
 function confirmResetSeason() { openModal('Purge Total Array','Wipe master season point values?',()=>{saveSeason({}); renderSeasonLB();}); }
@@ -706,10 +748,10 @@ async function joinGame() {
   if(!verifyDbConnection('join-err')) return;
   const code=document.getElementById('join-code').value.trim().toUpperCase();
   const name=document.getElementById('join-name').value.trim();
-  if(code.length!==4 || !name){ err('join-err','Specify valid room key token and your clean name.'); return; }
+  if(code.length!==4 || !name){ err('join-err','Specify valid room key token and your name.'); return; }
 
   const snap = await db.ref(`games/${code}`).once('value');
-  if(!snap.exists()){ err('join-err','Active target pool room not recognized.'); return; }
+  if(!snap.exists()){ err('join-err','Target room code not found.'); return; }
   if(snap.val().meta.status==='ended'){ err('join-err','Target instance has completed running lifecycle.'); return; }
 
   studentGameCode=code; studentKey=sanitizeKey(name);
@@ -742,10 +784,11 @@ function renderStudent(data) {
 
   document.getElementById('sg-name').textContent = meta.name||'';
   document.getElementById('sg-status').innerHTML = statusPill(status);
+  document.getElementById('sg-mode-badge').innerHTML = modeBadge(meta.mode);
 
   const betsEl=document.getElementById('sg-bets-list'), entries=Object.entries(bets);
   if(status!=='ended') {
-    if(entries.length===0){ betsEl.innerHTML='<div class="t-muted t-center">Constructing proposition metrics...</div>'; }
+    if(entries.length===0){ betsEl.innerHTML='<div class="t-muted t-center">Waiting for host to create lines...</div>'; }
     else {
       const activeState = !studentSubmitted && status==='open';
       betsEl.innerHTML=entries.map(([id,b])=>{
@@ -783,23 +826,23 @@ function makePick(id, choice) {
 
 async function submitPicks() {
   const keys = Object.keys(lastGameData.bets||{});
-  for(const k of keys){ if(!studentPicks[k]){ toast('All prediction choices must be explicitly designated.'); return; } }
+  for(const k of keys){ if(!studentPicks[k]){ toast('All prediction choices must be selected.'); return; } }
   await db.ref(`games/${studentGameCode}/players/${studentKey}`).update({submitted:true, picks:studentPicks});
   studentSubmitted=true;
-  toast('Predictions locked down.');
+  toast('Predictions locked in.');
 }
 
 function renderStudentResults(bets, players, me) {
   document.getElementById('sg-my-score').textContent = me.score??0;
-  document.getElementById('sg-my-score-sub').textContent = `${me.score??0} Correct Matches Generated`;
+  document.getElementById('sg-my-score-sub').textContent = `${me.score??0} Correct Matches`;
   
   document.getElementById('sg-bet-breakdown').innerHTML=Object.entries(bets).map(([id,b])=>{
     const pk=studentPicks[id], win=pk && b.result && pk===b.result;
     return `<div class="bet-result-row">
       <div style="flex:1;">
-        <div class="bet-result-phrase">"${b.phrase}"</div>
+        <div style="font-weight:700;font-size:14px;">"${b.phrase}"</div>
         <div class="t-muted" style="font-size:11px; margin-top:2px;">Line: ${b.line} · Final Count: ${b.finalCount}</div>
-        <div class="t-bold" style="font-size:12px; margin-top:2px; color:${win?'var(--accent)':'var(--red)'}">Selected: ${pk||'None'}</div>
+        <div style="font-size:12px; margin-top:2px; font-weight:700; color:${win?'var(--accent)':'var(--red)'}">Selected: ${pk||'None'}</div>
       </div>
       <span class="rbadge ${win?'rbadge-win':'rbadge-loss'}">${win?'✓ Win':'✗ Loss'}</span>
     </div>`;
